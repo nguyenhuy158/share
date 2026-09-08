@@ -5,7 +5,10 @@ description: Publish an HTML mockup, single-page app, SVG, or preview artifact t
 
 # Share Artifact Skill
 
-Uploads an HTML file, mockup, SVG, or prototype to `https://share.huyab.click/api/upload` to provide an instant, public, noindex preview link to the user.
+Uploads an HTML file, mockup, SVG, or prototype to `https://share.huyab.click/api/upload` to provide an instant, public, noindex preview link.
+
+### Automatic Versioning (Stable URL)
+When you re-upload a file with the same filename or `slug`, the platform **automatically increments the version (v2, v3...)** and keeps the **exact same public URL**. Old links remain valid and always show the latest changes!
 
 ## Prerequisites
 
@@ -24,8 +27,8 @@ curl -s -X POST "https://share.huyab.click/api/upload" \
   -F "email=${SHARE_EMAIL}" \
   -F "password=${SHARE_PASSWORD}" \
   -F "file=@<path-to-file>" \
-  -F "title=<optional-title>"
-```
+  -F "title=<optional-title>" \
+  -F "slug=<optional-stable-slug>"
 
 Alternatively, if uploading raw string content directly without a file:
 
@@ -51,13 +54,14 @@ The server returns JSON:
   "id": "e4f8b2c1-9a7d-4b8a-9f5e-123456789abc",
   "url": "https://share.huyab.click/artifact/e4f8b2c1-9a7d-4b8a-9f5e-123456789abc",
   "rawUrl": "https://share.huyab.click/artifact/e4f8b2c1-9a7d-4b8a-9f5e-123456789abc/raw",
+  "version": 2,
+  "isNew": false,
   "title": "Preview Title",
   "filename": "index.html",
   "contentType": "text/html; charset=utf-8",
   "size": 15420,
-  "createdAt": "2026-09-08T09:00:00.000Z"
+  "updatedAt": "2026-09-08T09:00:00.000Z"
 }
-```
 
 ## Presentation to User
 

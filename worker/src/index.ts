@@ -115,6 +115,8 @@ app.post("/api/upload", async (c) => {
   let filename = "index.html";
   let title = "";
   let contentType = "";
+  let slug = "";
+  let isFresh = false;
   let isBinary = 0;
 
   // 1. Check Authorization header: Authorization: Bearer <password>, X-Email: <email>
@@ -135,6 +137,8 @@ app.post("/api/upload", async (c) => {
     email = (formData.get("email") as string)?.trim().toLowerCase() || email;
     password = (formData.get("password") as string)?.trim() || password;
     title = (formData.get("title") as string)?.trim() || "";
+    slug = (formData.get("slug") as string)?.trim().toLowerCase() || "";
+    isFresh = formData.get("fresh") === "true" || formData.get("new") === "true";
 
     const fileOrContent = formData.get("file");
     if (fileOrContent instanceof File) {
@@ -172,6 +176,9 @@ app.post("/api/upload", async (c) => {
       content?: string;
       filename?: string;
       title?: string;
+      slug?: string;
+      fresh?: boolean;
+      new?: boolean;
       contentType?: string;
       isBinary?: boolean;
     };
@@ -180,6 +187,8 @@ app.post("/api/upload", async (c) => {
     content = body.content || "";
     filename = body.filename?.trim() || filename;
     title = body.title?.trim() || "";
+    slug = body.slug?.trim().toLowerCase() || "";
+    isFresh = Boolean(body.fresh || body.new);
     contentType = body.contentType?.trim() || "";
     isBinary = body.isBinary ? 1 : 0;
   }
@@ -217,7 +226,6 @@ app.post("/api/upload", async (c) => {
     return c.json({ error: "Invalid master password." }, 401);
   }
 
-  const id = crypto.randomUUID();
   const effectiveTitle = title || filename;
   const effectiveContentType = contentType || getMimeType(filename);
   const size = isBinary ? Math.round((content.length * 3) / 4) : new TextEncoder().encode(content).length;
@@ -227,30 +235,110 @@ app.post("/api/upload", async (c) => {
     return c.json({ error: "Artifact content exceeds maximum size limit (2MB)." }, 413);
   }
 
-  await c.env.DB.prepare(
-    `INSERT INTO share_artifacts (id, user_id, title, filename, content_type, size, content, is_binary)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-  )
-    .bind(id, user.id, effectiveTitle, filename, effectiveContentType, size, content, isBinary)
-    .run();
+  type ExistingRow = {
+    id: string;
+    title: string;
+    filename: string;
+    content: string;
+    size: number;
+    version: number;
+    slug: string | null;
+    created_at: string;
+    updated_at: string;
+  };
+
+  let existing: ExistingRow | null = null;
+
+  // Check if an existing artifact should be versioned
+  if (!isFresh) {
+    if (slug) {
+      existing = await c.env.DB.prepare(
+        `SELECT id, title, filename, content, size, version, slug, created_at, updated_at
+         FROM share_artifacts WHERE user_id = ? AND slug = ? LIMIT 1`
+      )
+        .bind(user.id, slug)
+        .first<ExistingRow>();
+    } else if (filename) {
+      existing = await c.env.DB.prepare(
+        `SELECT id, title, filename, content, size, version, slug, created_at, updated_at
+         FROM share_artifacts WHERE user_id = ? AND filename = ? ORDER BY created_at DESC LIMIT 1`
+      )
+        .bind(user.id, filename)
+        .first<ExistingRow>();
+    } else if (title) {
+      existing = await c.env.DB.prepare(
+        `SELECT id, title, filename, content, size, version, slug, created_at, updated_at
+         FROM share_artifacts WHERE user_id = ? AND title = ? ORDER BY created_at DESC LIMIT 1`
+      )
+        .bind(user.id, title)
+        .first<ExistingRow>();
+    }
+  }
+
+  let targetId: string;
+  let nextVersion: number;
+  const now = new Date().toISOString();
+
+  if (existing) {
+    // 1. Archive previous version
+    const versionHistoryId = crypto.randomUUID();
+    await c.env.DB.prepare(
+      `INSERT INTO share_artifact_versions (id, artifact_id, version, content, size, created_at)
+       VALUES (?, ?, ?, ?, ?, ?)`
+    )
+      .bind(
+        versionHistoryId,
+        existing.id,
+        existing.version || 1,
+        existing.content,
+        existing.size,
+        existing.updated_at || existing.created_at
+      )
+      .run();
+
+    targetId = existing.id;
+    nextVersion = (existing.version || 1) + 1;
+    const finalSlug = slug || existing.slug || null;
+
+    // 2. Update existing artifact in-place with incremented version
+    await c.env.DB.prepare(
+      `UPDATE share_artifacts
+       SET title = ?, filename = ?, content = ?, size = ?, content_type = ?, is_binary = ?, version = ?, slug = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now')
+       WHERE id = ?`
+    )
+      .bind(effectiveTitle, filename, content, size, effectiveContentType, isBinary, nextVersion, finalSlug, existing.id)
+      .run();
+  } else {
+    // Brand new artifact
+    targetId = crypto.randomUUID();
+    nextVersion = 1;
+
+    await c.env.DB.prepare(
+      `INSERT INTO share_artifacts (id, user_id, title, filename, content_type, size, content, is_binary, version, slug)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    )
+      .bind(targetId, user.id, effectiveTitle, filename, effectiveContentType, size, content, isBinary, nextVersion, slug || null)
+      .run();
+  }
 
   const appUrl = (c.env.APP_URL || "https://share.huyab.click").replace(/\/$/, "");
-  const publicUrl = `${appUrl}/artifact/${id}`;
-  const rawUrl = `${appUrl}/artifact/${id}/raw`;
+  const publicUrl = `${appUrl}/artifact/${targetId}`;
+  const rawUrl = `${appUrl}/artifact/${targetId}/raw`;
 
   return c.json({
     success: true,
-    id,
+    id: targetId,
     url: publicUrl,
     rawUrl,
+    version: nextVersion,
+    isNew: !existing,
     title: effectiveTitle,
     filename,
     contentType: effectiveContentType,
     size,
-    createdAt: new Date().toISOString(),
+    updatedAt: now,
   });
 });
-
 // Helper to authenticate either via SSO cookie or Bearer master password
 async function authenticateUser(c: Context<{ Bindings: Bindings; Variables: Variables }>): Promise<DbUser | null> {
   const claims = await getClaimsFromRequest(c.req.raw, c.env.SSO_ISSUER);
@@ -286,16 +374,63 @@ app.get("/api/artifacts", async (c) => {
   }
 
   const { results } = await c.env.DB.prepare(
-    `SELECT id, title, filename, content_type, size, views, created_at, updated_at
+    `SELECT id, title, filename, content_type, size, views, version, slug, created_at, updated_at
      FROM share_artifacts
      WHERE user_id = ?
-     ORDER BY created_at DESC
+     ORDER BY updated_at DESC
      LIMIT 100`
   )
     .bind(user.id)
     .all();
 
   return c.json({ artifacts: results || [] });
+});
+
+// Get versions history of an artifact
+app.get("/api/artifacts/:id/versions", async (c) => {
+  const user = await authenticateUser(c);
+  if (!user) {
+    return c.json({ error: "Unauthorized" }, 401);
+  }
+
+  const id = c.req.param("id");
+  const current = await c.env.DB.prepare(
+    `SELECT id, version, size, created_at, updated_at
+     FROM share_artifacts
+     WHERE id = ? AND user_id = ?`
+  )
+    .bind(id, user.id)
+    .first<{ id: string; version: number; size: number; created_at: string; updated_at: string }>();
+
+  if (!current) {
+    return c.json({ error: "Artifact not found" }, 404);
+  }
+
+  const { results: history } = await c.env.DB.prepare(
+    `SELECT version, size, created_at
+     FROM share_artifact_versions
+     WHERE artifact_id = ?
+     ORDER BY version DESC`
+  )
+    .bind(id)
+    .all<{ version: number; size: number; created_at: string }>();
+
+  const allVersions = [
+    {
+      version: current.version || 1,
+      size: current.size,
+      createdAt: current.updated_at || current.created_at,
+      isCurrent: true,
+    },
+    ...(history || []).map((h) => ({
+      version: h.version,
+      size: h.size,
+      createdAt: h.created_at,
+      isCurrent: false,
+    })),
+  ];
+
+  return c.json({ currentVersion: current.version || 1, versions: allVersions });
 });
 
 // Delete user artifact (supports SSO session or Bearer master password)
@@ -316,16 +451,22 @@ app.delete("/api/artifacts/:id", async (c) => {
     return c.json({ error: "Artifact not found or already deleted" }, 404);
   }
 
+  // Clean up versions
+  await c.env.DB.prepare("DELETE FROM share_artifact_versions WHERE artifact_id = ?").bind(id).run();
+
   return c.json({ success: true });
 });
+
 // Public direct artifact preview
 app.get("/artifact/:id", async (c) => {
   const id = c.req.param("id");
+  const requestedVersion = c.req.query("v");
+
   const row = await c.env.DB.prepare(
-    "SELECT content, content_type, is_binary FROM share_artifacts WHERE id = ?"
+    "SELECT content, content_type, is_binary, version FROM share_artifacts WHERE id = ?"
   )
     .bind(id)
-    .first<{ content: string; content_type: string; is_binary: number }>();
+    .first<{ content: string; content_type: string; is_binary: number; version: number }>();
 
   if (!row) {
     return c.html(
@@ -355,6 +496,25 @@ app.get("/artifact/:id", async (c) => {
     );
   }
 
+  let contentToServe = row.content;
+  let activeVersion = row.version || 1;
+
+  if (requestedVersion) {
+    const vNum = parseInt(requestedVersion, 10);
+    if (!isNaN(vNum) && vNum !== row.version) {
+      const historical = await c.env.DB.prepare(
+        "SELECT content FROM share_artifact_versions WHERE artifact_id = ? AND version = ?"
+      )
+        .bind(id, vNum)
+        .first<{ content: string }>();
+
+      if (historical) {
+        contentToServe = historical.content;
+        activeVersion = vNum;
+      }
+    }
+  }
+
   // Increment view counter without delaying response
   c.executionCtx.waitUntil(
     c.env.DB.prepare("UPDATE share_artifacts SET views = views + 1 WHERE id = ?").bind(id).run()
@@ -365,10 +525,11 @@ app.get("/artifact/:id", async (c) => {
     "X-Robots-Tag": "noindex, nofollow",
     "Access-Control-Allow-Origin": "*",
     "Cache-Control": "public, max-age=3600",
+    "X-Artifact-Version": String(activeVersion),
   };
 
   if (row.is_binary === 1) {
-    const binaryStr = atob(row.content);
+    const binaryStr = atob(contentToServe);
     const bytes = new Uint8Array(binaryStr.length);
     for (let i = 0; i < binaryStr.length; i++) {
       bytes[i] = binaryStr.charCodeAt(i);
@@ -376,30 +537,52 @@ app.get("/artifact/:id", async (c) => {
     return new Response(bytes, { status: 200, headers });
   }
 
-  return new Response(row.content, { status: 200, headers });
+  return new Response(contentToServe, { status: 200, headers });
 });
 
 // Download raw file content
 app.get("/artifact/:id/raw", async (c) => {
   const id = c.req.param("id");
+  const requestedVersion = c.req.query("v");
+
   const row = await c.env.DB.prepare(
-    "SELECT filename, content, content_type, is_binary FROM share_artifacts WHERE id = ?"
+    "SELECT filename, content, content_type, is_binary, version FROM share_artifacts WHERE id = ?"
   )
     .bind(id)
-    .first<{ filename: string; content: string; content_type: string; is_binary: number }>();
+    .first<{ filename: string; content: string; content_type: string; is_binary: number; version: number }>();
 
   if (!row) {
     return c.text("Artifact not found", 404);
+  }
+
+  let contentToServe = row.content;
+  let activeVersion = row.version || 1;
+
+  if (requestedVersion) {
+    const vNum = parseInt(requestedVersion, 10);
+    if (!isNaN(vNum) && vNum !== row.version) {
+      const historical = await c.env.DB.prepare(
+        "SELECT content FROM share_artifact_versions WHERE artifact_id = ? AND version = ?"
+      )
+        .bind(id, vNum)
+        .first<{ content: string }>();
+
+      if (historical) {
+        contentToServe = historical.content;
+        activeVersion = vNum;
+      }
+    }
   }
 
   const headers: Record<string, string> = {
     "Content-Type": row.content_type || "application/octet-stream",
     "Content-Disposition": `attachment; filename="${row.filename || "artifact"}"`,
     "X-Robots-Tag": "noindex, nofollow",
+    "X-Artifact-Version": String(activeVersion),
   };
 
   if (row.is_binary === 1) {
-    const binaryStr = atob(row.content);
+    const binaryStr = atob(contentToServe);
     const bytes = new Uint8Array(binaryStr.length);
     for (let i = 0; i < binaryStr.length; i++) {
       bytes[i] = binaryStr.charCodeAt(i);
@@ -407,7 +590,6 @@ app.get("/artifact/:id/raw", async (c) => {
     return new Response(bytes, { status: 200, headers });
   }
 
-  return new Response(row.content, { status: 200, headers });
+  return new Response(contentToServe, { status: 200, headers });
 });
-
 export default app;

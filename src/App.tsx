@@ -35,7 +35,17 @@ interface Artifact {
   content_type: string;
   size: number;
   views: number;
+  version?: number;
+  slug?: string | null;
   created_at: string;
+  updated_at?: string;
+}
+
+interface VersionHistoryItem {
+  version: number;
+  size: number;
+  createdAt: string;
+  isCurrent: boolean;
 }
 
 export default function App() {
@@ -60,6 +70,28 @@ export default function App() {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   // Tab state for Agent integration: "mcp" | "skill" | "curl"
   const [agentTab, setAgentTab] = useState<"mcp" | "skill" | "curl">("mcp");
+
+  // Version history modal state
+  const [selectedArtifactForVersions, setSelectedArtifactForVersions] = useState<Artifact | null>(null);
+  const [versionHistory, setVersionHistory] = useState<VersionHistoryItem[]>([]);
+  const [loadingVersions, setLoadingVersions] = useState(false);
+
+  const handleViewVersions = async (art: Artifact) => {
+    setSelectedArtifactForVersions(art);
+    setLoadingVersions(true);
+    setVersionHistory([]);
+    try {
+      const res = await fetch(`/api/artifacts/${art.id}/versions`);
+      if (res.ok) {
+        const data = await res.json();
+        setVersionHistory(data.versions || []);
+      }
+    } catch (err) {
+      console.error("Failed to fetch versions", err);
+    } finally {
+      setLoadingVersions(false);
+    }
+  };
 
   const fetchUser = async () => {
     try {
@@ -662,12 +694,27 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                         return (
                           <tr key={art.id} className="hover:bg-slate-800/30 transition-colors group">
                             <td className="py-3.5 px-2">
-                              <div className="font-semibold text-slate-200 group-hover:text-sky-300 transition-colors">
-                                {art.title}
+                              <div className="flex items-center gap-2">
+                                <span className="font-semibold text-slate-200 group-hover:text-sky-300 transition-colors">
+                                  {art.title}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleViewVersions(art)}
+                                  className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-sky-500/10 text-sky-400 border border-sky-500/20 font-semibold hover:bg-sky-500/20 hover:border-sky-500/40 transition-colors cursor-pointer"
+                                  title="View version history"
+                                >
+                                  v{art.version || 1}
+                                </button>
                               </div>
                               <div className="text-xs text-slate-500 font-mono flex items-center gap-1.5 mt-0.5">
                                 <FileText className="w-3 h-3" />
-                                {art.filename}
+                                <span>{art.filename}</span>
+                                {art.slug && (
+                                  <span className="text-slate-400 font-sans text-[11px] bg-slate-800 px-1.5 py-0.2 rounded">
+                                    slug: {art.slug}
+                                  </span>
+                                )}
                               </div>
                             </td>
                             <td className="py-3.5 px-2">
@@ -685,7 +732,10 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                               </span>
                             </td>
                             <td className="py-3.5 px-2 text-slate-400 text-xs whitespace-nowrap">
-                              {formatDate(art.created_at)}
+                              <div>{formatDate(art.updated_at || art.created_at)}</div>
+                              {art.updated_at && art.updated_at !== art.created_at && (
+                                <div className="text-[10px] text-slate-500">Updated</div>
+                              )}
                             </td>
                             <td className="py-3.5 px-2 text-right">
                               <div className="flex items-center justify-end gap-1.5">
@@ -735,6 +785,87 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
             </div>
           </div>
         )}
+      {/* Version History Modal */}
+      {selectedArtifactForVersions && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="font-bold text-base text-white">Version History</h3>
+                <p className="text-xs text-slate-400 truncate max-w-[280px]">
+                  {selectedArtifactForVersions.title}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedArtifactForVersions(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 text-xs font-semibold px-2 py-1"
+              >
+                Close
+              </button>
+            </div>
+
+            {loadingVersions ? (
+              <div className="py-8 text-center text-xs text-slate-400">Loading version history...</div>
+            ) : versionHistory.length === 0 ? (
+              <div className="py-8 text-center text-xs text-slate-500">No previous versions saved.</div>
+            ) : (
+              <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1">
+                {versionHistory.map((item) => {
+                  const versionUrl = item.isCurrent
+                    ? `${appOrigin}/artifact/${selectedArtifactForVersions.id}`
+                    : `${appOrigin}/artifact/${selectedArtifactForVersions.id}?v=${item.version}`;
+
+                  return (
+                    <div
+                      key={item.version}
+                      className="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800/80 text-xs"
+                    >
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-white">Version {item.version}</span>
+                          {item.isCurrent && (
+                            <span className="px-1.5 py-0.2 rounded text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">
+                              Latest
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[11px] text-slate-500 mt-0.5 font-mono">
+                          {formatBytes(item.size)} &bull; {formatDate(item.createdAt)}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleCopy(versionUrl, `ver-${item.version}`)}
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-sky-300 hover:bg-slate-800 transition-colors"
+                          title="Copy version link"
+                        >
+                          {copiedKey === `ver-${item.version}` ? (
+                            <Check className="w-3.5 h-3.5 text-emerald-400" />
+                          ) : (
+                            <Copy className="w-3.5 h-3.5" />
+                          )}
+                        </button>
+                        <a
+                          href={versionUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-300 hover:bg-slate-800 transition-colors flex items-center gap-1"
+                          title="Preview this version"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       </main>
 
       {/* Footer */}

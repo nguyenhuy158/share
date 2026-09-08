@@ -55,6 +55,14 @@ const TOOLS = [
           type: "string",
           description: "Filename with extension (e.g. 'index.html', 'chart.svg'). Defaults to index.html",
         },
+        slug: {
+          type: "string",
+          description: "Optional stable slug identifier (e.g. 'debt-transfer-flow'). Re-uploading with the same slug or filename updates the existing artifact to a new version without changing its public URL.",
+        },
+        fresh: {
+          type: "boolean",
+          description: "Set to true if you explicitly want a brand new URL instead of updating an existing artifact.",
+        },
         email: {
           type: "string",
           description: "Your Share account email (defaults to SHARE_EMAIL env var)",
@@ -126,6 +134,8 @@ async function handleShareArtifact(args) {
       content,
       filename,
       title,
+      slug: args.slug,
+      fresh: args.fresh,
     }),
   });
 
@@ -135,8 +145,10 @@ async function handleShareArtifact(args) {
   }
 
   return {
-    message: "Artifact successfully published!",
+    message: data.isNew ? "Artifact successfully published!" : `Artifact updated to version ${data.version}!`,
     id: data.id,
+    version: data.version,
+    isNew: data.isNew,
     previewUrl: data.url,
     rawUrl: data.rawUrl,
     title: data.title,
