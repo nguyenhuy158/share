@@ -16,7 +16,9 @@
     "APP_URL": "https://share.huyab.click"
   },
   "workers_dev": false,
-  "routes": [{ "pattern": "share.huyab.click", "custom_domain": true }],
+  "routes": [
+    { "pattern": "share.huyab.click/*", "zone_name": "huyab.click" }
+  ],
   "d1_databases": [
     {
       "binding": "DB",
