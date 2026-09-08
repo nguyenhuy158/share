@@ -68,10 +68,33 @@ Response:
 
 ---
 
-## AI Agent Integration (Claude Code, Cursor, Codex)
+## AI Agent Integration (MCP & Skills)
 
-Copy `skills/share-artifact/SKILL.md` into your agent skills directory, or simply add this to your project prompt or `.cursorrules`:
+### Option A: Model Context Protocol (MCP Server)
+Add this to your `.cursor/mcp.json` or `claude_desktop_config.json`:
 
+```json
+{
+  "mcpServers": {
+    "share": {
+      "command": "node",
+      "args": ["/Users/huyntq/Documents/personal-projects/share/mcp/index.mjs"],
+      "env": {
+        "SHARE_EMAIL": "your-email@example.com",
+        "SHARE_PASSWORD": "your-master-password"
+      }
+    }
+  }
+}
+```
+This exposes the `share_artifact` and `list_artifacts` tools directly to Claude Desktop, Cursor, or any MCP client!
+
+### Option B: Claude Code & OMP Agent Skill
+Install the skill with one command:
+```bash
+./scripts/install-skill.sh
+```
+Or add this to your project prompt or `.cursorrules`:
 ```markdown
 When generating an HTML mockup or visual artifact that the user wants to preview:
 Upload the file via curl:
@@ -82,7 +105,6 @@ curl -s -X POST "https://share.huyab.click/api/upload" \
   -F "title=<title>"
 Then share the resulting public URL with the user.
 ```
-
 ---
 
 ## Tech Stack & Deployment

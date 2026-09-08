@@ -58,6 +58,8 @@ export default function App() {
 
   // Copy state
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  // Tab state for Agent integration: "mcp" | "skill" | "curl"
+  const [agentTab, setAgentTab] = useState<"mcp" | "skill" | "curl">("mcp");
 
   const fetchUser = async () => {
     try {
@@ -75,7 +77,6 @@ export default function App() {
       setLoading(false);
     }
   };
-
   const fetchArtifacts = async () => {
     try {
       const res = await fetch("/api/artifacts");
@@ -206,9 +207,24 @@ export default function App() {
       a.id.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const appOrigin = window.location.origin;
+  const appOrigin = typeof window !== "undefined" ? window.location.origin : "https://share.huyab.click";
   const userEmail = user?.email || "your-email@example.com";
   const userPwdPlaceholder = masterPassword || "YOUR_MASTER_PASSWORD";
+
+  const mcpConfigExample = `{
+  "mcpServers": {
+    "share": {
+      "command": "node",
+      "args": ["<path-to-share-repo>/mcp/index.mjs"],
+      "env": {
+        "SHARE_EMAIL": "${userEmail}",
+        "SHARE_PASSWORD": "${userPwdPlaceholder}"
+      }
+    }
+  }
+}`;
+
+  const skillInstallCmd = `curl -sSL https://raw.githubusercontent.com/nguyenhuy158/share/main/scripts/install-skill.sh | bash`;
 
   const curlExample = `curl -X POST "${appOrigin}/api/upload" \\
   -F "email=${userEmail}" \\
@@ -216,16 +232,14 @@ export default function App() {
   -F "file=@./index.html" \\
   -F "title=My Demo"`;
 
-  const agentPromptSnippet = `You can share HTML mockups and preview files online at:
-URL: ${appOrigin}/api/upload
-Method: POST (multipart/form-data)
-Fields:
-- email: "${userEmail}"
-- password: "${userPwdPlaceholder}"
-- file: (upload the file)
-- title: (optional title)
-
-After uploading, the server returns { url: "${appOrigin}/artifact/<uuid>" }. Provide this URL to the user.`;
+  const agentPromptSnippet = `When you create an HTML preview, mockup, or artifact:
+Upload it to Share via curl:
+curl -s -X POST "${appOrigin}/api/upload" \\
+  -F "email=${userEmail}" \\
+  -F "password=${userPwdPlaceholder}" \\
+  -F "file=@<path-to-file>" \\
+  -F "title=<title>"
+Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
@@ -460,35 +474,139 @@ After uploading, the server returns { url: "${appOrigin}/artifact/<uuid>" }. Pro
                   </form>
                 </div>
 
-                {/* Agent Cheatsheet */}
+                {/* Agent & MCP Integration Card */}
                 <div className="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-6 shadow-sm">
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                       <Terminal className="w-5 h-5 text-purple-400" />
-                      <h2 className="font-bold text-base text-white">AI Agent / CLI Setup</h2>
+                      <h2 className="font-bold text-base text-white">AI Agent & MCP Integration</h2>
                     </div>
-                    <button
-                      onClick={() => handleCopy(curlExample, "curl")}
-                      className="flex items-center gap-1 text-xs text-slate-400 hover:text-sky-300 transition-colors py-1 px-2 rounded-lg bg-slate-800"
-                    >
-                      {copiedKey === "curl" ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                      {copiedKey === "curl" ? "Copied" : "Copy cURL"}
-                    </button>
+                    <div className="flex items-center p-1 rounded-xl bg-slate-950 border border-slate-800 text-xs">
+                      <button
+                        type="button"
+                        onClick={() => setAgentTab("mcp")}
+                        className={`px-3 py-1 rounded-lg font-medium transition-all ${
+                          agentTab === "mcp"
+                            ? "bg-sky-500 text-white shadow-sm"
+                            : "text-slate-400 hover:text-slate-200"
+                        }`}
+                      >
+                        MCP Server
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setAgentTab("skill")}
+                        className={`px-3 py-1 rounded-lg font-medium transition-all ${
+                          agentTab === "skill"
+                            ? "bg-sky-500 text-white shadow-sm"
+                            : "text-slate-400 hover:text-slate-200"
+                        }`}
+                      >
+                        Agent Skill
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setAgentTab("curl")}
+                        className={`px-3 py-1 rounded-lg font-medium transition-all ${
+                          agentTab === "curl"
+                            ? "bg-sky-500 text-white shadow-sm"
+                            : "text-slate-400 hover:text-slate-200"
+                        }`}
+                      >
+                        cURL / Bash
+                      </button>
+                    </div>
                   </div>
-                  <pre className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono text-slate-300 overflow-x-auto">
-                    {curlExample}
-                  </pre>
 
-                  <div className="mt-3 flex items-center justify-between">
-                    <span className="text-xs text-slate-400">Agent Instruction / System Prompt:</span>
-                    <button
-                      onClick={() => handleCopy(agentPromptSnippet, "prompt")}
-                      className="text-xs text-sky-400 hover:text-sky-300 transition-colors flex items-center gap-1"
-                    >
-                      {copiedKey === "prompt" ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                      Copy Prompt Snippet
-                    </button>
-                  </div>
+                  {agentTab === "mcp" && (
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-xs text-slate-400">
+                          Add to <code className="text-sky-300">.cursor/mcp.json</code> or Claude Desktop config:
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => handleCopy(mcpConfigExample, "mcp")}
+                          className="flex items-center gap-1 text-xs text-slate-400 hover:text-sky-300 transition-colors py-1 px-2 rounded-lg bg-slate-800"
+                        >
+                          {copiedKey === "mcp" ? (
+                            <Check className="w-3.5 h-3.5 text-emerald-400" />
+                          ) : (
+                            <Copy className="w-3.5 h-3.5" />
+                          )}
+                          {copiedKey === "mcp" ? "Copied" : "Copy Config"}
+                        </button>
+                      </div>
+                      <pre className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono text-slate-300 overflow-x-auto">
+                        {mcpConfigExample}
+                      </pre>
+                      <p className="mt-2.5 text-[11px] text-slate-500">
+                        Exposes tools: <code className="text-slate-400">share_artifact</code> (upload file/content) and{" "}
+                        <code className="text-slate-400">list_artifacts</code>.
+                      </p>
+                    </div>
+                  )}
+
+                  {agentTab === "skill" && (
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-xs text-slate-400">Install skill to Claude Code & OMP:</p>
+                        <button
+                          type="button"
+                          onClick={() => handleCopy(skillInstallCmd, "skill-cmd")}
+                          className="flex items-center gap-1 text-xs text-slate-400 hover:text-sky-300 transition-colors py-1 px-2 rounded-lg bg-slate-800"
+                        >
+                          {copiedKey === "skill-cmd" ? (
+                            <Check className="w-3.5 h-3.5 text-emerald-400" />
+                          ) : (
+                            <Copy className="w-3.5 h-3.5" />
+                          )}
+                          {copiedKey === "skill-cmd" ? "Copied" : "Copy Command"}
+                        </button>
+                      </div>
+                      <pre className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono text-slate-300 overflow-x-auto mb-3">
+                        {skillInstallCmd}
+                      </pre>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-slate-400">System prompt / Custom instructions:</span>
+                        <button
+                          type="button"
+                          onClick={() => handleCopy(agentPromptSnippet, "prompt")}
+                          className="text-xs text-sky-400 hover:text-sky-300 transition-colors flex items-center gap-1"
+                        >
+                          {copiedKey === "prompt" ? (
+                            <Check className="w-3.5 h-3.5 text-emerald-400" />
+                          ) : (
+                            <Copy className="w-3.5 h-3.5" />
+                          )}
+                          Copy Prompt
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {agentTab === "curl" && (
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-xs text-slate-400">Direct cURL upload command:</p>
+                        <button
+                          type="button"
+                          onClick={() => handleCopy(curlExample, "curl")}
+                          className="flex items-center gap-1 text-xs text-slate-400 hover:text-sky-300 transition-colors py-1 px-2 rounded-lg bg-slate-800"
+                        >
+                          {copiedKey === "curl" ? (
+                            <Check className="w-3.5 h-3.5 text-emerald-400" />
+                          ) : (
+                            <Copy className="w-3.5 h-3.5" />
+                          )}
+                          {copiedKey === "curl" ? "Copied" : "Copy cURL"}
+                        </button>
+                      </div>
+                      <pre className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono text-slate-300 overflow-x-auto">
+                        {curlExample}
+                      </pre>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

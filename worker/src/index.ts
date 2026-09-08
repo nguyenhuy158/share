@@ -1,4 +1,4 @@
-import { Hono } from "hono";
+import { Hono, Context } from "hono";
 import { cors } from "hono/cors";
 import { generateSalt, hashPassword, verifyPassword } from "./crypto.js";
 import { getClaimsFromRequest, resolveUser, ssoUrl, DbUser } from "./session.js";
@@ -251,14 +251,40 @@ app.post("/api/upload", async (c) => {
   });
 });
 
-// List user artifacts (requires SSO session)
-app.get("/api/artifacts", async (c) => {
+// Helper to authenticate either via SSO cookie or Bearer master password
+async function authenticateUser(c: Context<{ Bindings: Bindings; Variables: Variables }>): Promise<DbUser | null> {
   const claims = await getClaimsFromRequest(c.req.raw, c.env.SSO_ISSUER);
-  if (!claims) {
+  if (claims) {
+    return resolveUser(c.env.DB, claims);
+  }
+
+  const authHeader = c.req.header("Authorization");
+  const emailHeader = c.req.header("X-Email");
+  if (authHeader?.startsWith("Bearer ") && emailHeader) {
+    const password = authHeader.slice(7).trim();
+    const email = emailHeader.trim().toLowerCase();
+    const user = await c.env.DB.prepare(
+      "SELECT id, email, name, picture, password_hash, password_salt FROM share_users WHERE email = ?"
+    )
+      .bind(email)
+      .first<DbUser>();
+
+    if (user && user.password_hash && user.password_salt) {
+      const isValid = await verifyPassword(password, user.password_hash, user.password_salt);
+      if (isValid) return user;
+    }
+  }
+
+  return null;
+}
+
+// List user artifacts (supports SSO session or Bearer master password)
+app.get("/api/artifacts", async (c) => {
+  const user = await authenticateUser(c);
+  if (!user) {
     return c.json({ error: "Unauthorized" }, 401);
   }
 
-  const user = await resolveUser(c.env.DB, claims);
   const { results } = await c.env.DB.prepare(
     `SELECT id, title, filename, content_type, size, views, created_at, updated_at
      FROM share_artifacts
@@ -272,16 +298,14 @@ app.get("/api/artifacts", async (c) => {
   return c.json({ artifacts: results || [] });
 });
 
-// Delete user artifact (requires SSO session)
+// Delete user artifact (supports SSO session or Bearer master password)
 app.delete("/api/artifacts/:id", async (c) => {
-  const claims = await getClaimsFromRequest(c.req.raw, c.env.SSO_ISSUER);
-  if (!claims) {
+  const user = await authenticateUser(c);
+  if (!user) {
     return c.json({ error: "Unauthorized" }, 401);
   }
 
-  const user = await resolveUser(c.env.DB, claims);
   const id = c.req.param("id");
-
   const result = await c.env.DB.prepare(
     "DELETE FROM share_artifacts WHERE id = ? AND user_id = ?"
   )
@@ -294,7 +318,6 @@ app.delete("/api/artifacts/:id", async (c) => {
 
   return c.json({ success: true });
 });
-
 // Public direct artifact preview
 app.get("/artifact/:id", async (c) => {
   const id = c.req.param("id");
