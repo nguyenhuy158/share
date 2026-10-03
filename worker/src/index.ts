@@ -1,7 +1,8 @@
+import { DEFAULT_SSO_ISSUER, ssoUrl } from "@huyab/sso";
 import { Hono, Context } from "hono";
 import { cors } from "hono/cors";
 import { generateSalt, hashPassword, verifyPassword } from "./crypto.js";
-import { findUserByEmail, getClaimsFromRequest, resolveUser, ssoUrl, DbUser } from "./session.js";
+import { findUserByEmail, getSsoClaims, resolveUser, DbUser } from "./session.js";
 
 type Bindings = {
   DB: D1Database;
@@ -17,7 +18,6 @@ const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
 app.use("/api/*", cors());
 
-const DEFAULT_ISSUER = "https://auth.huyab.click";
 const DEFAULT_APP_URL = "https://share.huyab.click";
 
 /** Gốc URL công khai của app, không có "/" cuối. */
@@ -50,7 +50,7 @@ function getMimeType(filename: string, fallback = "text/html; charset=utf-8"): s
 
 // SSO Authentication helpers
 function ssoRedirect(c: Context<{ Bindings: Bindings; Variables: Variables }>, path: "/login" | "/logout") {
-  return c.redirect(ssoUrl(c.env.SSO_ISSUER || DEFAULT_ISSUER, path, `${appUrl(c.env)}/`));
+  return c.redirect(ssoUrl(c.env.SSO_ISSUER || DEFAULT_SSO_ISSUER, path, `${appUrl(c.env)}/`));
 }
 
 app.get("/login", (c) => ssoRedirect(c, "/login"));
@@ -59,7 +59,7 @@ app.get("/logout", (c) => ssoRedirect(c, "/logout"));
 
 // Current user state for Web UI
 app.get("/api/me", async (c) => {
-  const claims = await getClaimsFromRequest(c.req.raw, c.env.SSO_ISSUER);
+  const claims = await getSsoClaims(c);
   if (!claims) {
     return c.json({ authenticated: false });
   }
@@ -84,7 +84,7 @@ app.get("/api/me", async (c) => {
 
 // Set or update Master Password (requires SSO session)
 app.post("/api/user/master-password", async (c) => {
-  const claims = await getClaimsFromRequest(c.req.raw, c.env.SSO_ISSUER);
+  const claims = await getSsoClaims(c);
   if (!claims) {
     return c.json({ error: "Unauthorized. Please sign in via SSO." }, 401);
   }
@@ -340,7 +340,7 @@ app.post("/api/upload", async (c) => {
 });
 // Helper to authenticate either via SSO cookie or Bearer master password
 async function authenticateUser(c: Context<{ Bindings: Bindings; Variables: Variables }>): Promise<DbUser | null> {
-  const claims = await getClaimsFromRequest(c.req.raw, c.env.SSO_ISSUER);
+  const claims = await getSsoClaims(c);
   if (claims) {
     return resolveUser(c.env.DB, claims);
   }

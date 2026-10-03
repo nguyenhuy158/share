@@ -13,7 +13,7 @@ src/                     # Dashboard frontend
   index.css              #   Tailwind entry, imports styles/tokens.css
   styles/tokens.css      #   --ui-* design tokens (copied from ../ui-kit)
 worker/src/              # Hono Worker: index.ts (API + artifact serving),
-                         #   session.ts, sso-verifier.ts, crypto.ts
+                         #   session.ts (SSO cookie via @huyab/sso + users), crypto.ts
 mcp/index.mjs            # MCP server exposing upload tools to agents
 skills/share-artifact/   # Agent skill (SKILL.md)
 scripts/                 # share.sh (CLI upload), install-skill.sh

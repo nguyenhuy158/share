@@ -22,6 +22,7 @@
     "e2e:prod": "E2E_BASE_URL=https://share.huyab.click node e2e/readonly-smoke.mjs"
   },
   "dependencies": {
+    "@huyab/sso": "github:nguyenhuy158/kit#v0.1.0&path:packages/sso",
     "@tailwindcss/vite": "^4.0.0",
     "hono": "^4.12.27",
     "lucide-react": "^1.31.0",
