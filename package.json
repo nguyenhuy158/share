@@ -13,6 +13,8 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 127.0.0.1",
     "check": "tsc -b",
+    "lint": "biome check .",
+    "format": "biome format --write .",
     "db:migrate:local": "wrangler d1 execute DB --local --file=./schema.sql",
     "db:migrate:remote": "wrangler d1 execute DB --remote --file=./schema.sql",
     "deploy": "pnpm build && wrangler deploy"
@@ -26,6 +28,7 @@
     "tailwindcss": "^4.0.0"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.5.15",
     "@cloudflare/workers-types": "^5.20260703.1",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
