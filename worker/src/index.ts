@@ -1,7 +1,7 @@
 import { Hono, Context } from "hono";
 import { cors } from "hono/cors";
 import { generateSalt, hashPassword, verifyPassword } from "./crypto.js";
-import { getClaimsFromRequest, resolveUser, ssoUrl, DbUser } from "./session.js";
+import { findUserByEmail, getClaimsFromRequest, resolveUser, ssoUrl, DbUser } from "./session.js";
 
 type Bindings = {
   DB: D1Database;
@@ -16,6 +16,14 @@ type Variables = {
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
 app.use("/api/*", cors());
+
+const DEFAULT_ISSUER = "https://auth.huyab.click";
+const DEFAULT_APP_URL = "https://share.huyab.click";
+
+/** Gốc URL công khai của app, không có "/" cuối. */
+function appUrl(env: Bindings): string {
+  return (env.APP_URL || DEFAULT_APP_URL).replace(/\/$/, "");
+}
 
 const MIME_BY_EXT: Record<string, string> = {
   html: "text/html; charset=utf-8",
@@ -41,17 +49,13 @@ function getMimeType(filename: string, fallback = "text/html; charset=utf-8"): s
 }
 
 // SSO Authentication helpers
-app.get("/login", (c) => {
-  const issuer = c.env.SSO_ISSUER || "https://auth.huyab.click";
-  const appUrl = c.env.APP_URL || "https://share.huyab.click";
-  return c.redirect(ssoUrl(issuer, "/login", `${appUrl}/`));
-});
+function ssoRedirect(c: Context<{ Bindings: Bindings; Variables: Variables }>, path: "/login" | "/logout") {
+  return c.redirect(ssoUrl(c.env.SSO_ISSUER || DEFAULT_ISSUER, path, `${appUrl(c.env)}/`));
+}
 
-app.get("/logout", (c) => {
-  const issuer = c.env.SSO_ISSUER || "https://auth.huyab.click";
-  const appUrl = c.env.APP_URL || "https://share.huyab.click";
-  return c.redirect(ssoUrl(issuer, "/logout", `${appUrl}/`));
-});
+app.get("/login", (c) => ssoRedirect(c, "/login"));
+
+app.get("/logout", (c) => ssoRedirect(c, "/logout"));
 
 // Current user state for Web UI
 app.get("/api/me", async (c) => {
@@ -205,11 +209,7 @@ app.post("/api/upload", async (c) => {
   }
 
   // Check user & verify master password
-  const user = await c.env.DB.prepare(
-    "SELECT id, email, password_hash, password_salt FROM share_users WHERE email = ?"
-  )
-    .bind(email)
-    .first<DbUser>();
+  const user = await findUserByEmail(c.env.DB, email);
 
   if (!user || !user.password_hash || !user.password_salt) {
     return c.json(
@@ -321,9 +321,8 @@ app.post("/api/upload", async (c) => {
       .run();
   }
 
-  const appUrl = (c.env.APP_URL || "https://share.huyab.click").replace(/\/$/, "");
-  const publicUrl = `${appUrl}/artifact/${targetId}`;
-  const rawUrl = `${appUrl}/artifact/${targetId}/raw`;
+  const publicUrl = `${appUrl(c.env)}/artifact/${targetId}`;
+  const rawUrl = `${appUrl(c.env)}/artifact/${targetId}/raw`;
 
   return c.json({
     success: true,
@@ -351,11 +350,7 @@ async function authenticateUser(c: Context<{ Bindings: Bindings; Variables: Vari
   if (authHeader?.startsWith("Bearer ") && emailHeader) {
     const password = authHeader.slice(7).trim();
     const email = emailHeader.trim().toLowerCase();
-    const user = await c.env.DB.prepare(
-      "SELECT id, email, name, picture, password_hash, password_salt FROM share_users WHERE email = ?"
-    )
-      .bind(email)
-      .first<DbUser>();
+    const user = await findUserByEmail(c.env.DB, email);
 
     if (user && user.password_hash && user.password_salt) {
       const isValid = await verifyPassword(password, user.password_hash, user.password_salt);
@@ -457,6 +452,40 @@ app.delete("/api/artifacts/:id", async (c) => {
   return c.json({ success: true });
 });
 
+type ArtifactRow = { content: string; is_binary: number; version: number };
+
+/**
+ * Body để trả cho `?v=`: bản lịch sử nếu có, không thì bản hiện tại; kèm số
+ * version thực sự được phục vụ. Nội dung nhị phân (lưu base64) giải về bytes.
+ */
+async function resolveArtifactBody(db: D1Database, id: string, row: ArtifactRow, requestedVersion?: string) {
+  let content = row.content;
+  let version = row.version || 1;
+
+  if (requestedVersion) {
+    const vNum = parseInt(requestedVersion, 10);
+    if (!isNaN(vNum) && vNum !== row.version) {
+      const historical = await db
+        .prepare("SELECT content FROM share_artifact_versions WHERE artifact_id = ? AND version = ?")
+        .bind(id, vNum)
+        .first<{ content: string }>();
+
+      if (historical) {
+        content = historical.content;
+        version = vNum;
+      }
+    }
+  }
+
+  if (row.is_binary !== 1) return { body: content, version };
+  const binaryStr = atob(content);
+  const bytes = new Uint8Array(binaryStr.length);
+  for (let i = 0; i < binaryStr.length; i++) {
+    bytes[i] = binaryStr.charCodeAt(i);
+  }
+  return { body: bytes, version };
+}
+
 // Public direct artifact preview
 app.get("/artifact/:id", async (c) => {
   const id = c.req.param("id");
@@ -496,24 +525,7 @@ app.get("/artifact/:id", async (c) => {
     );
   }
 
-  let contentToServe = row.content;
-  let activeVersion = row.version || 1;
-
-  if (requestedVersion) {
-    const vNum = parseInt(requestedVersion, 10);
-    if (!isNaN(vNum) && vNum !== row.version) {
-      const historical = await c.env.DB.prepare(
-        "SELECT content FROM share_artifact_versions WHERE artifact_id = ? AND version = ?"
-      )
-        .bind(id, vNum)
-        .first<{ content: string }>();
-
-      if (historical) {
-        contentToServe = historical.content;
-        activeVersion = vNum;
-      }
-    }
-  }
+  const { body, version } = await resolveArtifactBody(c.env.DB, id, row, requestedVersion);
 
   // Increment view counter without delaying response
   c.executionCtx.waitUntil(
@@ -525,19 +537,10 @@ app.get("/artifact/:id", async (c) => {
     "X-Robots-Tag": "noindex, nofollow",
     "Access-Control-Allow-Origin": "*",
     "Cache-Control": "public, max-age=3600",
-    "X-Artifact-Version": String(activeVersion),
+    "X-Artifact-Version": String(version),
   };
 
-  if (row.is_binary === 1) {
-    const binaryStr = atob(contentToServe);
-    const bytes = new Uint8Array(binaryStr.length);
-    for (let i = 0; i < binaryStr.length; i++) {
-      bytes[i] = binaryStr.charCodeAt(i);
-    }
-    return new Response(bytes, { status: 200, headers });
-  }
-
-  return new Response(contentToServe, { status: 200, headers });
+  return new Response(body, { status: 200, headers });
 });
 
 // Download raw file content
@@ -555,41 +558,15 @@ app.get("/artifact/:id/raw", async (c) => {
     return c.text("Artifact not found", 404);
   }
 
-  let contentToServe = row.content;
-  let activeVersion = row.version || 1;
-
-  if (requestedVersion) {
-    const vNum = parseInt(requestedVersion, 10);
-    if (!isNaN(vNum) && vNum !== row.version) {
-      const historical = await c.env.DB.prepare(
-        "SELECT content FROM share_artifact_versions WHERE artifact_id = ? AND version = ?"
-      )
-        .bind(id, vNum)
-        .first<{ content: string }>();
-
-      if (historical) {
-        contentToServe = historical.content;
-        activeVersion = vNum;
-      }
-    }
-  }
+  const { body, version } = await resolveArtifactBody(c.env.DB, id, row, requestedVersion);
 
   const headers: Record<string, string> = {
     "Content-Type": row.content_type || "application/octet-stream",
     "Content-Disposition": `attachment; filename="${row.filename || "artifact"}"`,
     "X-Robots-Tag": "noindex, nofollow",
-    "X-Artifact-Version": String(activeVersion),
+    "X-Artifact-Version": String(version),
   };
 
-  if (row.is_binary === 1) {
-    const binaryStr = atob(contentToServe);
-    const bytes = new Uint8Array(binaryStr.length);
-    for (let i = 0; i < binaryStr.length; i++) {
-      bytes[i] = binaryStr.charCodeAt(i);
-    }
-    return new Response(bytes, { status: 200, headers });
-  }
-
-  return new Response(contentToServe, { status: 200, headers });
+  return new Response(body, { status: 200, headers });
 });
 export default app;

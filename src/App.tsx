@@ -48,6 +48,28 @@ interface VersionHistoryItem {
   isCurrent: boolean;
 }
 
+type AgentTab = "mcp" | "skill" | "curl";
+
+const AGENT_TABS: { id: AgentTab; label: string }[] = [
+  { id: "mcp", label: "MCP Server" },
+  { id: "skill", label: "Agent Skill" },
+  { id: "curl", label: "cURL / Bash" },
+];
+
+/** Nút copy nhỏ cạnh khối code: đổi sang "Copied" trong lúc `copied`. */
+function CopyButton({ label, copied, onCopy }: { label: string; copied: boolean; onCopy: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onCopy}
+      className="flex items-center gap-1 text-xs text-fg-muted hover:text-sky-300 transition-colors py-1 px-2 rounded-lg bg-surface-muted"
+    >
+      {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+      {copied ? "Copied" : label}
+    </button>
+  );
+}
+
 export default function App() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
@@ -68,8 +90,8 @@ export default function App() {
 
   // Copy state
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
-  // Tab state for Agent integration: "mcp" | "skill" | "curl"
-  const [agentTab, setAgentTab] = useState<"mcp" | "skill" | "curl">("mcp");
+  // Tab state for Agent integration
+  const [agentTab, setAgentTab] = useState<AgentTab>("mcp");
 
   // Version history modal state
   const [selectedArtifactForVersions, setSelectedArtifactForVersions] = useState<Artifact | null>(null);
@@ -514,39 +536,20 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                       <h2 className="font-bold text-base text-white">AI Agent & MCP Integration</h2>
                     </div>
                     <div className="flex items-center p-1 rounded-xl bg-bg border border-border text-xs">
-                      <button
-                        type="button"
-                        onClick={() => setAgentTab("mcp")}
-                        className={`px-3 py-1 rounded-lg font-medium transition-all ${
-                          agentTab === "mcp"
-                            ? "bg-sky-500 text-white shadow-sm"
-                            : "text-fg-muted hover:text-slate-200"
-                        }`}
-                      >
-                        MCP Server
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setAgentTab("skill")}
-                        className={`px-3 py-1 rounded-lg font-medium transition-all ${
-                          agentTab === "skill"
-                            ? "bg-sky-500 text-white shadow-sm"
-                            : "text-fg-muted hover:text-slate-200"
-                        }`}
-                      >
-                        Agent Skill
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setAgentTab("curl")}
-                        className={`px-3 py-1 rounded-lg font-medium transition-all ${
-                          agentTab === "curl"
-                            ? "bg-sky-500 text-white shadow-sm"
-                            : "text-fg-muted hover:text-slate-200"
-                        }`}
-                      >
-                        cURL / Bash
-                      </button>
+                      {AGENT_TABS.map((tab) => (
+                        <button
+                          key={tab.id}
+                          type="button"
+                          onClick={() => setAgentTab(tab.id)}
+                          className={`px-3 py-1 rounded-lg font-medium transition-all ${
+                            agentTab === tab.id
+                              ? "bg-sky-500 text-white shadow-sm"
+                              : "text-fg-muted hover:text-slate-200"
+                          }`}
+                        >
+                          {tab.label}
+                        </button>
+                      ))}
                     </div>
                   </div>
 
@@ -556,18 +559,11 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                         <p className="text-xs text-fg-muted">
                           Add to <code className="text-sky-300">.cursor/mcp.json</code> or Claude Desktop config:
                         </p>
-                        <button
-                          type="button"
-                          onClick={() => handleCopy(mcpConfigExample, "mcp")}
-                          className="flex items-center gap-1 text-xs text-fg-muted hover:text-sky-300 transition-colors py-1 px-2 rounded-lg bg-surface-muted"
-                        >
-                          {copiedKey === "mcp" ? (
-                            <Check className="w-3.5 h-3.5 text-emerald-400" />
-                          ) : (
-                            <Copy className="w-3.5 h-3.5" />
-                          )}
-                          {copiedKey === "mcp" ? "Copied" : "Copy Config"}
-                        </button>
+                        <CopyButton
+                          label="Copy Config"
+                          copied={copiedKey === "mcp"}
+                          onCopy={() => handleCopy(mcpConfigExample, "mcp")}
+                        />
                       </div>
                       <pre className="p-3.5 rounded-xl bg-bg border border-border text-xs font-mono text-slate-300 overflow-x-auto">
                         {mcpConfigExample}
@@ -583,18 +579,11 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                     <div>
                       <div className="flex items-center justify-between mb-2">
                         <p className="text-xs text-fg-muted">Install skill to Claude Code & OMP:</p>
-                        <button
-                          type="button"
-                          onClick={() => handleCopy(skillInstallCmd, "skill-cmd")}
-                          className="flex items-center gap-1 text-xs text-fg-muted hover:text-sky-300 transition-colors py-1 px-2 rounded-lg bg-surface-muted"
-                        >
-                          {copiedKey === "skill-cmd" ? (
-                            <Check className="w-3.5 h-3.5 text-emerald-400" />
-                          ) : (
-                            <Copy className="w-3.5 h-3.5" />
-                          )}
-                          {copiedKey === "skill-cmd" ? "Copied" : "Copy Command"}
-                        </button>
+                        <CopyButton
+                          label="Copy Command"
+                          copied={copiedKey === "skill-cmd"}
+                          onCopy={() => handleCopy(skillInstallCmd, "skill-cmd")}
+                        />
                       </div>
                       <pre className="p-3.5 rounded-xl bg-bg border border-border text-xs font-mono text-slate-300 overflow-x-auto mb-3">
                         {skillInstallCmd}
@@ -621,18 +610,11 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                     <div>
                       <div className="flex items-center justify-between mb-2">
                         <p className="text-xs text-fg-muted">Direct cURL upload command:</p>
-                        <button
-                          type="button"
-                          onClick={() => handleCopy(curlExample, "curl")}
-                          className="flex items-center gap-1 text-xs text-fg-muted hover:text-sky-300 transition-colors py-1 px-2 rounded-lg bg-surface-muted"
-                        >
-                          {copiedKey === "curl" ? (
-                            <Check className="w-3.5 h-3.5 text-emerald-400" />
-                          ) : (
-                            <Copy className="w-3.5 h-3.5" />
-                          )}
-                          {copiedKey === "curl" ? "Copied" : "Copy cURL"}
-                        </button>
+                        <CopyButton
+                          label="Copy cURL"
+                          copied={copiedKey === "curl"}
+                          onCopy={() => handleCopy(curlExample, "curl")}
+                        />
                       </div>
                       <pre className="p-3.5 rounded-xl bg-bg border border-border text-xs font-mono text-slate-300 overflow-x-auto">
                         {curlExample}
