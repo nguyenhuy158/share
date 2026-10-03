@@ -17,6 +17,7 @@ worker/src/              # Hono Worker: index.ts (API + artifact serving),
 mcp/index.mjs            # MCP server exposing upload tools to agents
 skills/share-artifact/   # Agent skill (SKILL.md)
 scripts/                 # share.sh (CLI upload), install-skill.sh
+e2e/                     # playwright-core smoke: run.mjs, readonly-smoke, ui-smoke, sso-mock
 schema.sql               # D1 schema
 wrangler.jsonc           # Worker bindings
 ```
@@ -33,6 +34,9 @@ wrangler.jsonc           # Worker bindings
 - `pnpm preview`: preview the production build on `127.0.0.1`.
 - `pnpm db:migrate:local` / `pnpm db:migrate:remote`: apply `schema.sql` to D1.
 - `pnpm deploy`: build then `wrangler deploy`.
+- `pnpm e2e`: build, fresh local D1 (`.wrangler/e2e-state`), mock SSO issuer,
+  `wrangler dev --local`, then `e2e/readonly-smoke.mjs` + `e2e/ui-smoke.mjs`.
+- `pnpm e2e:prod`: read-only smoke (GET only, logged out) against `share.huyab.click`.
 
 ## Coding Style & Naming Conventions
 
@@ -44,9 +48,13 @@ clear responsibility.
 
 ## Testing Guidelines
 
-There is no automated test suite yet; `pnpm check` and `pnpm build` are the
-gate (also run in CI). Verify UI changes manually in the browser. If tests are
-added, use Vitest with colocated `*.test.ts` files and add a `test` script.
+No unit test suite yet; `pnpm check`, `pnpm build` and `pnpm e2e` are the gate
+(all run in CI). E2E uses `playwright-core` with a system/CI Chromium
+(`e2e/chromium.mjs`). `e2e/sso-mock.mjs` signs a real `huyab_sso` JWT and
+serves its JWKS, so the worker's SSO verifier runs unmodified. `ui-smoke.mjs`
+writes data and refuses non-localhost URLs; `readonly-smoke.mjs` must stay
+GET-only (and never open a real artifact: each view bumps `views`) because it
+also runs against production.
 
 ## Commit & Pull Request Guidelines
 

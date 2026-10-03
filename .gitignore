@@ -10,3 +10,4 @@ coverage
 .pnpm-store/
 {{pkgetc}}/
 {{HOMEBREW_PREFIX}}/
+e2e-failure.png

@@ -31,3 +31,36 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+  e2e:
+    name: E2E smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # playwright-core không tự tải browser; cài Chromium vào ~/.cache/ms-playwright
+      # (e2e/chromium.mjs tự tìm ở đây).
+      - name: Install Chromium
+        run: pnpm dlx playwright@1.63.0 install --with-deps chromium
+
+      # `pnpm e2e` tự build, tạo D1 local mới, bật SSO giả + wrangler dev --local rồi tắt.
+      - name: E2E
+        run: pnpm e2e
+
+      - name: Upload failure screenshot
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-failure
+          path: e2e-failure.png
+          if-no-files-found: ignore
