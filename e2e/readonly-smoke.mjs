@@ -11,12 +11,11 @@
 //
 // Biến môi trường:
 // - E2E_BASE_URL: mặc định http://127.0.0.1:8787
-// - PLAYWRIGHT_CHROMIUM_PATH: xem e2e/chromium.mjs
+// - PLAYWRIGHT_CHROMIUM_PATH: xem findChromium() của @huyab/e2e
 import { randomUUID } from "node:crypto";
+import { BASE, findChromium } from "@huyab/e2e";
 import { chromium } from "playwright-core";
-import { findChromium } from "./chromium.mjs";
 
-const BASE = (process.env.E2E_BASE_URL || "http://127.0.0.1:8787").replace(/\/$/, "");
 const WAIT = { timeout: 15000 };
 const MISSING_ID = randomUUID();
 

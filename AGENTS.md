@@ -17,7 +17,7 @@ worker/src/              # Hono Worker: index.ts (API + artifact serving),
 mcp/index.mjs            # MCP server exposing upload tools to agents
 skills/share-artifact/   # Agent skill (SKILL.md)
 scripts/                 # share.sh (CLI upload), install-skill.sh
-e2e/                     # playwright-core smoke: run.mjs, readonly-smoke, ui-smoke, sso-mock
+e2e/                     # playwright-core smoke on @huyab/e2e: run.mjs, readonly-smoke, ui-smoke
 schema.sql               # D1 schema
 wrangler.jsonc           # Worker bindings
 ```
@@ -50,8 +50,8 @@ clear responsibility.
 
 No unit test suite yet; `pnpm check`, `pnpm build` and `pnpm e2e` are the gate
 (all run in CI). E2E uses `playwright-core` with a system/CI Chromium
-(`e2e/chromium.mjs`). `e2e/sso-mock.mjs` signs a real `huyab_sso` JWT and
-serves its JWKS, so the worker's SSO verifier runs unmodified. `ui-smoke.mjs`
+(`findChromium` from `@huyab/e2e`). `startSsoMock` (`@huyab/e2e`) signs a real
+`huyab_sso` JWT and serves its JWKS, so the worker's SSO verifier runs unmodified. `ui-smoke.mjs`
 writes data and refuses non-localhost URLs; `readonly-smoke.mjs` must stay
 GET-only (and never open a real artifact: each view bumps `views`) because it
 also runs against production.
