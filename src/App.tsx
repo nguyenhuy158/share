@@ -274,7 +274,7 @@ curl -s -X POST "${appOrigin}/api/upload" \\
 Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-bg text-fg flex flex-col font-sans">
       {/* Navbar */}
       <header className="border-b border-slate-800/80 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
@@ -294,7 +294,7 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
 
           <div className="flex items-center gap-3">
             {loading ? (
-              <div className="h-8 w-24 bg-slate-800 animate-pulse rounded-lg" />
+              <div className="h-8 w-24 bg-surface-muted animate-pulse rounded-lg" />
             ) : user ? (
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-full bg-slate-800/60 border border-slate-700/60 text-xs">
@@ -311,7 +311,7 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                 </div>
                 <a
                   href="/logout"
-                  className="p-2 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-800/80 transition-colors"
+                  className="p-2 rounded-lg text-fg-muted hover:text-rose-400 hover:bg-slate-800/80 transition-colors"
                   title="Sign out"
                 >
                   <LogOut className="w-4 h-4" />
@@ -345,7 +345,7 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                 Without Setup or Git Friction
               </span>
             </h1>
-            <p className="text-slate-400 text-lg mb-8 leading-relaxed">
+            <p className="text-fg-muted text-lg mb-8 leading-relaxed">
               Have your AI agent push HTML prototypes, mockups, or SVGs straight from local terminal sessions. Get a live, shareable link in under 2 seconds.
             </p>
 
@@ -360,30 +360,30 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
             </div>
 
             <div className="grid sm:grid-cols-3 gap-6 text-left border-t border-slate-800/80 pt-12">
-              <div className="p-5 rounded-2xl bg-slate-900/40 border border-slate-800">
+              <div className="p-5 rounded-2xl bg-slate-900/40 border border-border">
                 <div className="w-10 h-10 rounded-xl bg-sky-500/10 text-sky-400 flex items-center justify-center mb-3">
                   <Terminal className="w-5 h-5" />
                 </div>
                 <h3 className="font-semibold text-white mb-1">1-Command Agent Push</h3>
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-fg-muted">
                   AI agents push files via cURL or custom skills with your email and master password.
                 </p>
               </div>
-              <div className="p-5 rounded-2xl bg-slate-900/40 border border-slate-800">
+              <div className="p-5 rounded-2xl bg-slate-900/40 border border-border">
                 <div className="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mb-3">
                   <Globe className="w-5 h-5" />
                 </div>
                 <h3 className="font-semibold text-white mb-1">Direct Live Previews</h3>
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-fg-muted">
                   Clean URLs served at <code className="text-indigo-300">/artifact/:id</code> with exact mime types and scripts enabled.
                 </p>
               </div>
-              <div className="p-5 rounded-2xl bg-slate-900/40 border border-slate-800">
+              <div className="p-5 rounded-2xl bg-slate-900/40 border border-border">
                 <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-3">
                   <ShieldCheck className="w-5 h-5" />
                 </div>
                 <h3 className="font-semibold text-white mb-1">Private by Default</h3>
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-fg-muted">
                   Auto-tagged with <code className="text-emerald-300">noindex</code> headers to keep prototypes out of search engines.
                 </p>
               </div>
@@ -401,7 +401,7 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                     <Key className="w-5 h-5 text-sky-400" />
                     <h2 className="font-bold text-lg text-white">Master Password</h2>
                   </div>
-                  <p className="text-sm text-slate-400 mb-5 leading-relaxed">
+                  <p className="text-sm text-fg-muted mb-5 leading-relaxed">
                     Set a master password for your account. Your local AI session / CLI uses this password along with your email to upload artifacts.
                   </p>
 
@@ -415,7 +415,7 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                         placeholder="At least 6 characters"
                         value={masterPassword}
                         onChange={(e) => setMasterPassword(e.target.value)}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700/80 text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-bg border border-slate-700/80 text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500"
                       />
                     </div>
 
@@ -442,7 +442,7 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                   </form>
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-slate-800/80 text-xs text-slate-400 flex items-center justify-between">
+                <div className="mt-6 pt-4 border-t border-slate-800/80 text-xs text-fg-muted flex items-center justify-between">
                   <span>Status:</span>
                   <span
                     className={`font-semibold px-2 py-0.5 rounded-full ${
@@ -464,7 +464,7 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                     <UploadCloud className="w-5 h-5 text-indigo-400" />
                     <h2 className="font-bold text-lg text-white">Manual Quick Upload</h2>
                   </div>
-                  <p className="text-sm text-slate-400 mb-4">
+                  <p className="text-sm text-fg-muted mb-4">
                     Or drop a file directly here to test your preview link.
                   </p>
 
@@ -473,7 +473,7 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                       <input
                         type="file"
                         onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
-                        className="text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-slate-200 hover:file:bg-slate-700 cursor-pointer"
+                        className="text-sm text-fg-muted file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-surface-muted file:text-slate-200 hover:file:bg-slate-700 cursor-pointer"
                       />
                       <button
                         type="submit"
@@ -513,14 +513,14 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                       <Terminal className="w-5 h-5 text-purple-400" />
                       <h2 className="font-bold text-base text-white">AI Agent & MCP Integration</h2>
                     </div>
-                    <div className="flex items-center p-1 rounded-xl bg-slate-950 border border-slate-800 text-xs">
+                    <div className="flex items-center p-1 rounded-xl bg-bg border border-border text-xs">
                       <button
                         type="button"
                         onClick={() => setAgentTab("mcp")}
                         className={`px-3 py-1 rounded-lg font-medium transition-all ${
                           agentTab === "mcp"
                             ? "bg-sky-500 text-white shadow-sm"
-                            : "text-slate-400 hover:text-slate-200"
+                            : "text-fg-muted hover:text-slate-200"
                         }`}
                       >
                         MCP Server
@@ -531,7 +531,7 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                         className={`px-3 py-1 rounded-lg font-medium transition-all ${
                           agentTab === "skill"
                             ? "bg-sky-500 text-white shadow-sm"
-                            : "text-slate-400 hover:text-slate-200"
+                            : "text-fg-muted hover:text-slate-200"
                         }`}
                       >
                         Agent Skill
@@ -542,7 +542,7 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                         className={`px-3 py-1 rounded-lg font-medium transition-all ${
                           agentTab === "curl"
                             ? "bg-sky-500 text-white shadow-sm"
-                            : "text-slate-400 hover:text-slate-200"
+                            : "text-fg-muted hover:text-slate-200"
                         }`}
                       >
                         cURL / Bash
@@ -553,13 +553,13 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                   {agentTab === "mcp" && (
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <p className="text-xs text-slate-400">
+                        <p className="text-xs text-fg-muted">
                           Add to <code className="text-sky-300">.cursor/mcp.json</code> or Claude Desktop config:
                         </p>
                         <button
                           type="button"
                           onClick={() => handleCopy(mcpConfigExample, "mcp")}
-                          className="flex items-center gap-1 text-xs text-slate-400 hover:text-sky-300 transition-colors py-1 px-2 rounded-lg bg-slate-800"
+                          className="flex items-center gap-1 text-xs text-fg-muted hover:text-sky-300 transition-colors py-1 px-2 rounded-lg bg-surface-muted"
                         >
                           {copiedKey === "mcp" ? (
                             <Check className="w-3.5 h-3.5 text-emerald-400" />
@@ -569,12 +569,12 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                           {copiedKey === "mcp" ? "Copied" : "Copy Config"}
                         </button>
                       </div>
-                      <pre className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono text-slate-300 overflow-x-auto">
+                      <pre className="p-3.5 rounded-xl bg-bg border border-border text-xs font-mono text-slate-300 overflow-x-auto">
                         {mcpConfigExample}
                       </pre>
                       <p className="mt-2.5 text-[11px] text-slate-500">
-                        Exposes tools: <code className="text-slate-400">share_artifact</code> (upload file/content) and{" "}
-                        <code className="text-slate-400">list_artifacts</code>.
+                        Exposes tools: <code className="text-fg-muted">share_artifact</code> (upload file/content) and{" "}
+                        <code className="text-fg-muted">list_artifacts</code>.
                       </p>
                     </div>
                   )}
@@ -582,11 +582,11 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                   {agentTab === "skill" && (
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <p className="text-xs text-slate-400">Install skill to Claude Code & OMP:</p>
+                        <p className="text-xs text-fg-muted">Install skill to Claude Code & OMP:</p>
                         <button
                           type="button"
                           onClick={() => handleCopy(skillInstallCmd, "skill-cmd")}
-                          className="flex items-center gap-1 text-xs text-slate-400 hover:text-sky-300 transition-colors py-1 px-2 rounded-lg bg-slate-800"
+                          className="flex items-center gap-1 text-xs text-fg-muted hover:text-sky-300 transition-colors py-1 px-2 rounded-lg bg-surface-muted"
                         >
                           {copiedKey === "skill-cmd" ? (
                             <Check className="w-3.5 h-3.5 text-emerald-400" />
@@ -596,11 +596,11 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                           {copiedKey === "skill-cmd" ? "Copied" : "Copy Command"}
                         </button>
                       </div>
-                      <pre className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono text-slate-300 overflow-x-auto mb-3">
+                      <pre className="p-3.5 rounded-xl bg-bg border border-border text-xs font-mono text-slate-300 overflow-x-auto mb-3">
                         {skillInstallCmd}
                       </pre>
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-slate-400">System prompt / Custom instructions:</span>
+                        <span className="text-xs text-fg-muted">System prompt / Custom instructions:</span>
                         <button
                           type="button"
                           onClick={() => handleCopy(agentPromptSnippet, "prompt")}
@@ -620,11 +620,11 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                   {agentTab === "curl" && (
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <p className="text-xs text-slate-400">Direct cURL upload command:</p>
+                        <p className="text-xs text-fg-muted">Direct cURL upload command:</p>
                         <button
                           type="button"
                           onClick={() => handleCopy(curlExample, "curl")}
-                          className="flex items-center gap-1 text-xs text-slate-400 hover:text-sky-300 transition-colors py-1 px-2 rounded-lg bg-slate-800"
+                          className="flex items-center gap-1 text-xs text-fg-muted hover:text-sky-300 transition-colors py-1 px-2 rounded-lg bg-surface-muted"
                         >
                           {copiedKey === "curl" ? (
                             <Check className="w-3.5 h-3.5 text-emerald-400" />
@@ -634,7 +634,7 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                           {copiedKey === "curl" ? "Copied" : "Copy cURL"}
                         </button>
                       </div>
-                      <pre className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono text-slate-300 overflow-x-auto">
+                      <pre className="p-3.5 rounded-xl bg-bg border border-border text-xs font-mono text-slate-300 overflow-x-auto">
                         {curlExample}
                       </pre>
                     </div>
@@ -648,7 +648,7 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div>
                   <h2 className="font-bold text-xl text-white">My Shared Artifacts</h2>
-                  <p className="text-sm text-slate-400">
+                  <p className="text-sm text-fg-muted">
                     {artifacts.length} {artifacts.length === 1 ? "artifact" : "artifacts"} published
                   </p>
                 </div>
@@ -660,15 +660,15 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                     placeholder="Search artifacts..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                    className="w-full pl-9 pr-3 py-2 rounded-xl bg-bg border border-border text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
                   />
                 </div>
               </div>
 
               {filteredArtifacts.length === 0 ? (
-                <div className="py-16 text-center border border-dashed border-slate-800 rounded-2xl">
+                <div className="py-16 text-center border border-dashed border-border rounded-2xl">
                   <FileCode className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-                  <p className="text-slate-400 font-medium">No artifacts found</p>
+                  <p className="text-fg-muted font-medium">No artifacts found</p>
                   <p className="text-xs text-slate-500 mt-1">
                     Upload your first file or ask your AI agent to push via the API.
                   </p>
@@ -677,7 +677,7 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-sm">
                     <thead>
-                      <tr className="border-b border-slate-800 text-slate-400 text-xs font-semibold uppercase tracking-wider">
+                      <tr className="border-b border-border text-fg-muted text-xs font-semibold uppercase tracking-wider">
                         <th className="pb-3 px-2">Title & Filename</th>
                         <th className="pb-3 px-2">Type</th>
                         <th className="pb-3 px-2">Size</th>
@@ -711,27 +711,27 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                                 <FileText className="w-3 h-3" />
                                 <span>{art.filename}</span>
                                 {art.slug && (
-                                  <span className="text-slate-400 font-sans text-[11px] bg-slate-800 px-1.5 py-0.2 rounded">
+                                  <span className="text-fg-muted font-sans text-[11px] bg-surface-muted px-1.5 py-0.2 rounded">
                                     slug: {art.slug}
                                   </span>
                                 )}
                               </div>
                             </td>
                             <td className="py-3.5 px-2">
-                              <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 border border-slate-700/60">
+                              <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-surface-muted text-slate-300 border border-slate-700/60">
                                 {art.content_type.split(";")[0]}
                               </span>
                             </td>
-                            <td className="py-3.5 px-2 text-slate-400 text-xs font-mono">
+                            <td className="py-3.5 px-2 text-fg-muted text-xs font-mono">
                               {formatBytes(art.size)}
                             </td>
-                            <td className="py-3.5 px-2 text-slate-400 text-xs">
+                            <td className="py-3.5 px-2 text-fg-muted text-xs">
                               <span className="flex items-center gap-1">
                                 <Eye className="w-3.5 h-3.5 text-slate-500" />
                                 {art.views}
                               </span>
                             </td>
-                            <td className="py-3.5 px-2 text-slate-400 text-xs whitespace-nowrap">
+                            <td className="py-3.5 px-2 text-fg-muted text-xs whitespace-nowrap">
                               <div>{formatDate(art.updated_at || art.created_at)}</div>
                               {art.updated_at && art.updated_at !== art.created_at && (
                                 <div className="text-[10px] text-slate-500">Updated</div>
@@ -741,7 +741,7 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                               <div className="flex items-center justify-end gap-1.5">
                                 <button
                                   onClick={() => handleCopy(publicUrl, art.id)}
-                                  className="p-1.5 rounded-lg text-slate-400 hover:text-sky-300 hover:bg-slate-800 transition-colors"
+                                  className="p-1.5 rounded-lg text-fg-muted hover:text-sky-300 hover:bg-surface-muted transition-colors"
                                   title="Copy Preview Link"
                                 >
                                   {isCopied ? (
@@ -754,21 +754,21 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                                   href={publicUrl}
                                   target="_blank"
                                   rel="noreferrer"
-                                  className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-300 hover:bg-slate-800 transition-colors"
+                                  className="p-1.5 rounded-lg text-fg-muted hover:text-indigo-300 hover:bg-surface-muted transition-colors"
                                   title="Open Preview"
                                 >
                                   <ExternalLink className="w-4 h-4" />
                                 </a>
                                 <a
                                   href={`/artifact/${art.id}/raw`}
-                                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+                                  className="p-1.5 rounded-lg text-fg-muted hover:text-slate-200 hover:bg-surface-muted transition-colors"
                                   title="Download Raw File"
                                 >
                                   <Download className="w-4 h-4" />
                                 </a>
                                 <button
                                   onClick={() => handleDeleteArtifact(art.id)}
-                                  className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-slate-800 transition-colors"
+                                  className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-surface-muted transition-colors"
                                   title="Delete Artifact"
                                 >
                                   <Trash2 className="w-4 h-4" />
@@ -788,25 +788,25 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
       {/* Version History Modal */}
       {selectedArtifactForVersions && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-surface border border-border rounded-2xl max-w-md w-full p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="font-bold text-base text-white">Version History</h3>
-                <p className="text-xs text-slate-400 truncate max-w-[280px]">
+                <p className="text-xs text-fg-muted truncate max-w-[280px]">
                   {selectedArtifactForVersions.title}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setSelectedArtifactForVersions(null)}
-                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 text-xs font-semibold px-2 py-1"
+                className="p-1 rounded-lg text-fg-muted hover:text-white hover:bg-surface-muted text-xs font-semibold px-2 py-1"
               >
                 Close
               </button>
             </div>
 
             {loadingVersions ? (
-              <div className="py-8 text-center text-xs text-slate-400">Loading version history...</div>
+              <div className="py-8 text-center text-xs text-fg-muted">Loading version history...</div>
             ) : versionHistory.length === 0 ? (
               <div className="py-8 text-center text-xs text-slate-500">No previous versions saved.</div>
             ) : (
@@ -839,7 +839,7 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                         <button
                           type="button"
                           onClick={() => handleCopy(versionUrl, `ver-${item.version}`)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-sky-300 hover:bg-slate-800 transition-colors"
+                          className="p-1.5 rounded-lg text-fg-muted hover:text-sky-300 hover:bg-surface-muted transition-colors"
                           title="Copy version link"
                         >
                           {copiedKey === `ver-${item.version}` ? (
@@ -852,7 +852,7 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                           href={versionUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-300 hover:bg-slate-800 transition-colors flex items-center gap-1"
+                          className="p-1.5 rounded-lg text-fg-muted hover:text-indigo-300 hover:bg-surface-muted transition-colors flex items-center gap-1"
                           title="Preview this version"
                         >
                           <ExternalLink className="w-3.5 h-3.5" />
@@ -872,7 +872,7 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
       <footer className="border-t border-slate-800/80 py-6 text-center text-xs text-slate-500">
         <p>
           Share &bull; Zero-friction artifact hosting &bull;{" "}
-          <a href="https://github.com/nguyenhuy158/share" target="_blank" rel="noreferrer" className="hover:text-slate-400 underline">
+          <a href="https://github.com/nguyenhuy158/share" target="_blank" rel="noreferrer" className="hover:text-fg-muted underline">
             GitHub
           </a>
         </p>
