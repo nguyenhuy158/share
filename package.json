@@ -15,8 +15,8 @@
     "check": "tsc -b",
     "lint": "biome check .",
     "format": "biome format --write .",
-    "db:migrate:local": "wrangler d1 execute DB --local --file=./schema.sql",
-    "db:migrate:remote": "wrangler d1 execute DB --remote --file=./schema.sql",
+    "db:migrate:local": "wrangler d1 migrations apply DB --local",
+    "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
     "deploy": "pnpm build && wrangler deploy",
     "e2e": "node e2e/run.mjs",
     "e2e:prod": "E2E_BASE_URL=https://share.huyab.click node e2e/readonly-smoke.mjs"
