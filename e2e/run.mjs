@@ -1,4 +1,4 @@
-// Chạy cả bộ E2E một lệnh: build FE -> D1 local mới tinh (schema.sql) -> SSO
+// Chạy cả bộ E2E một lệnh: build FE -> D1 local mới tinh (migrations/) -> SSO
 // giả -> `wrangler dev --local` -> smoke chỉ-đọc + smoke đầy đủ -> tắt hết.
 // Không đụng dữ liệu thật: D1 nằm trong .wrangler/e2e-state, xoá mỗi lần chạy.
 //
@@ -26,14 +26,14 @@ await run(
     "exec",
     "wrangler",
     "d1",
-    "execute",
+    "migrations",
+    "apply",
     "DB",
     "--local",
     "--persist-to",
     PERSIST_DIR,
-    "--file=./schema.sql",
   ],
-  { label: "schema D1", env },
+  { label: "migrations D1", env },
 );
 
 const sso = await startSsoMock();

@@ -18,7 +18,7 @@ mcp/index.mjs            # MCP server exposing upload tools to agents
 skills/share-artifact/   # Agent skill (SKILL.md)
 scripts/                 # share.sh (CLI upload), install-skill.sh
 e2e/                     # playwright-core smoke on @huyab/e2e: run.mjs, readonly-smoke, ui-smoke
-schema.sql               # D1 schema
+migrations/              # D1 migrations, history in share_migrations
 wrangler.jsonc           # Worker bindings
 ```
 
@@ -32,7 +32,7 @@ wrangler.jsonc           # Worker bindings
 - `pnpm format`: apply Biome formatting.
 - `pnpm build`: typecheck then Vite production build.
 - `pnpm preview`: preview the production build on `127.0.0.1`.
-- `pnpm db:migrate:local` / `pnpm db:migrate:remote`: apply `schema.sql` to D1.
+- `pnpm db:migrate:local` / `pnpm db:migrate:remote`: apply pending `migrations/` to D1.
 - `pnpm deploy`: build then `wrangler deploy`.
 - `pnpm e2e`: build, fresh local D1 (`.wrangler/e2e-state`), mock SSO issuer,
   `wrangler dev --local`, then `e2e/readonly-smoke.mjs` + `e2e/ui-smoke.mjs`.
