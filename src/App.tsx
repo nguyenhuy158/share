@@ -261,7 +261,7 @@ export default function App() {
       a.id.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const appOrigin = typeof window !== "undefined" ? window.location.origin : "https://share.huyab.click";
+  const appOrigin = typeof window !== "undefined" ? window.location.origin : "https://share.huyab.cfd";
   const userEmail = user?.email || "your-email@example.com";
   const userPwdPlaceholder = masterPassword || "YOUR_MASTER_PASSWORD";
 

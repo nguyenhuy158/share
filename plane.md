@@ -1,4 +1,4 @@
-# Plan: Share (share.huyab.click)
+# Plan: Share (share.huyab.cfd)
 
 Hệ thống chia sẻ Artifacts/Previews nhanh (HTML, Single-Page Apps, Markdown, Images, Text) tối ưu cho AI Agents (Claude Code, Cursor, Codex, MCP tools) và local sessions.
 
@@ -7,11 +7,11 @@ Hệ thống chia sẻ Artifacts/Previews nhanh (HTML, Single-Page Apps, Markdow
 ## 1. Mục tiêu & Pain Points giải quyết
 - **Pain Point:** Sau khi AI code xong file HTML/mockup/prototype, dev mất nhiều thời gian cấu hình git/hosting chỉ để gửi link cho người khác xem hoặc mở trên điện thoại.
 - **Giải pháp:**
-  - AI đẩy file lên `share.huyab.click/api/upload` bằng 1 tool call bash/curl hoặc MCP skill.
-  - Link preview public ngay lập tức: `https://share.huyab.click/artifact/<uuid>`.
+  - AI đẩy file lên `share.huyab.cfd/api/upload` bằng 1 tool call bash/curl hoặc MCP skill.
+  - Link preview public ngay lập tức: `https://share.huyab.cfd/artifact/<uuid>`.
   - Không cần tạo repo git, không cần build pipeline phức tạp, có gắn header `X-Robots-Tag: noindex, nofollow`.
   - Xác thực đẩy file qua `email` + `master password` tự cấu hình.
-  - Dashboard web tích hợp SSO (`auth.huyab.click`) để quản lý file đã upload, xóa file, và cấu hình Master Password.
+  - Dashboard web tích hợp SSO (`auth.huyab.cfd`) để quản lý file đã upload, xóa file, và cấu hình Master Password.
 
 ---
 
@@ -19,22 +19,22 @@ Hệ thống chia sẻ Artifacts/Previews nhanh (HTML, Single-Page Apps, Markdow
 
 ### A. Luồng người dùng & Agent
 1. **Người dùng (Web UI):**
-   - Truy cập `https://share.huyab.click/`.
-   - Đăng nhập qua SSO Google OAuth (`https://auth.huyab.click/login?redirect_uri=...`).
+   - Truy cập `https://share.huyab.cfd/`.
+   - Đăng nhập qua SSO Google OAuth (`https://auth.huyab.cfd/login?redirect_uri=...`).
    - Thiết lập **Master Password** một lần trên web (lưu dạng PBKDF2 salt + hash trong Cloudflare D1).
    - Xem bảng danh sách Artifacts đã upload: link public, thời gian, dung lượng, lượt xem, xóa artifact.
    - Nhận cheatsheet mẫu lệnh `curl`, biến môi trường, và file cấu hình Agent Skill.
 
 2. **AI Agent / CLI Session (Local):**
    - Chạy lệnh upload qua API:
-     - `POST https://share.huyab.click/api/upload`
+     - `POST https://share.huyab.cfd/api/upload`
      - Header hoặc body chứa: `email` + `password` (master password) + nội dung file.
    - API trả về:
      ```json
      {
        "id": "uuid",
-       "url": "https://share.huyab.click/artifact/uuid",
-       "rawUrl": "https://share.huyab.click/artifact/uuid/raw",
+       "url": "https://share.huyab.cfd/artifact/uuid",
+       "rawUrl": "https://share.huyab.cfd/artifact/uuid/raw",
        "title": "Index Preview",
        "size": 15420,
        "contentType": "text/html"
@@ -42,7 +42,7 @@ Hệ thống chia sẻ Artifacts/Previews nhanh (HTML, Single-Page Apps, Markdow
      ```
 
 3. **Public Viewer:**
-   - Truy cập `https://share.huyab.click/artifact/<uuid>`.
+   - Truy cập `https://share.huyab.cfd/artifact/<uuid>`.
    - Server stream trực tiếp file HTML/SVG/ảnh với `Content-Type` chuẩn.
    - Trình duyệt hiển thị nguyên vẹn giao diện mà AI tạo ra.
 
@@ -55,8 +55,8 @@ Hệ thống chia sẻ Artifacts/Previews nhanh (HTML, Single-Page Apps, Markdow
   - `share_users`: Lưu thông tin user SSO và password hash + salt.
   - `share_artifacts`: Lưu artifact id, user_id, title, filename, content_type, size, content, views, created_at.
 - **Frontend:** React 19 + TypeScript + Tailwind CSS 4 + Lucide React.
-- **Custom Domain:** `share.huyab.click`.
-- **SSO Integration:** Verifier JWT RS256 từ `https://auth.huyab.click/.well-known/jwks.json`, cookie `huyab_sso`.
+- **Custom Domain:** `share.huyab.cfd`.
+- **SSO Integration:** Verifier JWT RS256 từ `https://auth.huyab.cfd/.well-known/jwks.json`, cookie `huyab_sso`.
 
 ---
 

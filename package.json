@@ -19,10 +19,10 @@
     "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
     "deploy": "pnpm build && wrangler deploy",
     "e2e": "node e2e/run.mjs",
-    "e2e:prod": "E2E_BASE_URL=https://share.huyab.click node e2e/readonly-smoke.mjs"
+    "e2e:prod": "E2E_BASE_URL=https://share.huyab.cfd node e2e/readonly-smoke.mjs"
   },
   "dependencies": {
-    "@huyab/sso": "github:nguyenhuy158/kit#v0.1.0&path:packages/sso",
+    "@huyab/sso": "github:nguyenhuy158/kit#v0.2.0&path:packages/sso",
     "@tailwindcss/vite": "^4.0.0",
     "hono": "^4.12.27",
     "lucide-react": "^1.31.0",
@@ -33,8 +33,8 @@
   "devDependencies": {
     "@biomejs/biome": "^2.5.15",
     "@cloudflare/workers-types": "^5.20260703.1",
-    "@huyab/config": "github:nguyenhuy158/kit#v0.1.0&path:packages/config",
-    "@huyab/e2e": "github:nguyenhuy158/kit#v0.1.0&path:packages/e2e",
+    "@huyab/config": "github:nguyenhuy158/kit#v0.2.0&path:packages/config",
+    "@huyab/e2e": "github:nguyenhuy158/kit#v0.2.0&path:packages/e2e",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^5.0.0",

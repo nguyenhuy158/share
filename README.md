@@ -1,4 +1,4 @@
-# Share (share.huyab.click)
+# Share (share.huyab.cfd)
 
 > Instant preview & artifact hosting for AI Agents (Claude Code, Cursor, Codex, MCP tools) and local terminal sessions.
 
@@ -7,14 +7,14 @@
 ## The Problem & The Solution
 
 - **Problem:** AI agents (Claude, Cursor, Codex) generate beautiful HTML mockups, dashboards, or SVGs in 15 seconds, but sharing them with collaborators or viewing on mobile requires setting up a git repository, pushing code, and configuring hosting platforms.
-- **Solution:** AI agents push artifacts directly to `share.huyab.click` in 1 command. You get an instant public URL (`https://share.huyab.click/artifact/<uuid>`) with `noindex` headers and zero repository clutter.
+- **Solution:** AI agents push artifacts directly to `share.huyab.cfd` in 1 command. You get an instant public URL (`https://share.huyab.cfd/artifact/<uuid>`) with `noindex` headers and zero repository clutter.
 
 ---
 
 ## Features
 
 - **Zero-Friction Publishing:** Upload via cURL, shell script, or AI agent tool call.
-- **SSO Authentication:** Sign in once via Google SSO (`auth.huyab.click`).
+- **SSO Authentication:** Sign in once via Google SSO (`auth.huyab.cfd`).
 - **Master Password for CLI/Agents:** Set a master password on the web dashboard to authenticate local terminal sessions.
 - **Direct Rendering:** Files are served with correct MIME types (`text/html`, `image/svg+xml`, etc.) so JavaScript, Tailwind CDN, and CSS execute seamlessly.
 - **Privacy by Default:** Responses include `X-Robots-Tag: noindex, nofollow` to prevent search engine indexing.
@@ -26,7 +26,7 @@
 ## Quickstart
 
 ### 1. Set up your Master Password
-1. Visit [share.huyab.click](https://share.huyab.click).
+1. Visit [share.huyab.cfd](https://share.huyab.cfd).
 2. Click **Sign in with SSO**.
 3. In the **Master Password** box, choose a password (at least 6 characters) and click **Save Master Password**.
 
@@ -44,7 +44,7 @@ Then run:
 
 Or using `curl`:
 ```bash
-curl -X POST "https://share.huyab.click/api/upload" \
+curl -X POST "https://share.huyab.cfd/api/upload" \
   -F "email=${SHARE_EMAIL}" \
   -F "password=${SHARE_PASSWORD}" \
   -F "file=@./index.html" \
@@ -56,8 +56,8 @@ Response:
 {
   "success": true,
   "id": "e4f8b2c1-9a7d-4b8a-9f5e-123456789abc",
-  "url": "https://share.huyab.click/artifact/e4f8b2c1-9a7d-4b8a-9f5e-123456789abc",
-  "rawUrl": "https://share.huyab.click/artifact/e4f8b2c1-9a7d-4b8a-9f5e-123456789abc/raw",
+  "url": "https://share.huyab.cfd/artifact/e4f8b2c1-9a7d-4b8a-9f5e-123456789abc",
+  "rawUrl": "https://share.huyab.cfd/artifact/e4f8b2c1-9a7d-4b8a-9f5e-123456789abc/raw",
   "title": "Dashboard Prototype",
   "filename": "index.html",
   "contentType": "text/html; charset=utf-8",
@@ -98,7 +98,7 @@ Or add this to your project prompt or `.cursorrules`:
 ```markdown
 When generating an HTML mockup or visual artifact that the user wants to preview:
 Upload the file via curl:
-curl -s -X POST "https://share.huyab.click/api/upload" \
+curl -s -X POST "https://share.huyab.cfd/api/upload" \
   -F "email=${SHARE_EMAIL}" \
   -F "password=${SHARE_PASSWORD}" \
   -F "file=@<path-to-file>" \
@@ -112,7 +112,7 @@ Then share the resulting public URL with the user.
 - **Runtime:** Cloudflare Workers (Hono backend + Vite SPA assets)
 - **Database:** Cloudflare D1 (`db` instance, tables prefixed with `share_`)
 - **Frontend:** React 19, TypeScript, Tailwind CSS 4, Lucide React
-- **Custom Domain:** `share.huyab.click`
+- **Custom Domain:** `share.huyab.cfd`
 
 ### Local Development
 ```bash

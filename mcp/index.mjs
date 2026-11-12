@@ -2,10 +2,10 @@
 
 /**
  * Share MCP Server
- * Zero-dependency Model Context Protocol (MCP) server over stdio for share.huyab.click.
+ * Zero-dependency Model Context Protocol (MCP) server over stdio for share.huyab.cfd.
  *
  * Exposes two tools:
- * 1. `share_artifact`: Uploads a file (or raw content) to share.huyab.click and returns an instant preview URL.
+ * 1. `share_artifact`: Uploads a file (or raw content) to share.huyab.cfd and returns an instant preview URL.
  * 2. `list_artifacts`: Lists all your published artifacts and links.
  *
  * Config in Claude Desktop / Cursor / Windsurf (.cursor/mcp.json):
@@ -29,13 +29,13 @@ import readline from "node:readline";
 
 const SERVER_NAME = "share-mcp";
 const SERVER_VERSION = "1.0.0";
-const DEFAULT_URL = "https://share.huyab.click";
+const DEFAULT_URL = "https://share.huyab.cfd";
 
 const TOOLS = [
   {
     name: "share_artifact",
     description:
-      "Upload and publish an HTML mockup, single-page app, SVG, or artifact to share.huyab.click and receive an instant live preview URL.",
+      "Upload and publish an HTML mockup, single-page app, SVG, or artifact to share.huyab.cfd and receive an instant live preview URL.",
     inputSchema: {
       type: "object",
       properties: {
@@ -76,7 +76,7 @@ const TOOLS = [
   },
   {
     name: "list_artifacts",
-    description: "List your previously uploaded artifacts and their public preview links on share.huyab.click.",
+    description: "List your previously uploaded artifacts and their public preview links on share.huyab.cfd.",
     inputSchema: {
       type: "object",
       properties: {

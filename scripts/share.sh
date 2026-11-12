@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# share.sh — Quick upload utility for share.huyab.click
+# share.sh — Quick upload utility for share.huyab.cfd
 # Usage:
 #   ./share.sh ./dist/index.html "My Dashboard"
 #   ./share.sh ./mockup.html
 # Environment variables:
 #   SHARE_EMAIL: your account email (e.g. user@example.com)
-#   SHARE_PASSWORD: your master password configured on share.huyab.click
-#   SHARE_URL: host URL (defaults to https://share.huyab.click)
+#   SHARE_PASSWORD: your master password configured on share.huyab.cfd
+#   SHARE_URL: host URL (defaults to https://share.huyab.cfd)
 
-SHARE_URL="${SHARE_URL:-https://share.huyab.click}"
+SHARE_URL="${SHARE_URL:-https://share.huyab.cfd}"
 
 FILE="${1:-}"
 TITLE="${2:-}"

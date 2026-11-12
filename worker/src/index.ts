@@ -18,7 +18,7 @@ const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
 app.use("/api/*", cors());
 
-const DEFAULT_APP_URL = "https://share.huyab.click";
+const DEFAULT_APP_URL = "https://share.huyab.cfd";
 
 /** Gốc URL công khai của app, không có "/" cuối. */
 function appUrl(env: Bindings): string {
@@ -215,7 +215,7 @@ app.post("/api/upload", async (c) => {
     return c.json(
       {
         error:
-          "User not found or master password not set. Please log in to https://share.huyab.click via SSO and set your master password first.",
+          "User not found or master password not set. Please log in to https://share.huyab.cfd via SSO and set your master password first.",
       },
       401
     );
