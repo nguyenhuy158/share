@@ -6,7 +6,7 @@ set -euo pipefail
 SKILL_SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")/../skills/share-artifact" && pwd)"
 MCP_SCRIPT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../mcp" && pwd)/index.mjs"
 
-echo "=== Share (share.huyab.click) Agent Setup ==="
+echo "=== Share (share.huyab.cfd) Agent Setup ==="
 echo ""
 
 # 1. Claude Code / Codex skill
@@ -40,4 +40,4 @@ cat <<EOF
 }
 EOF
 echo ""
-echo "Setup complete! Make sure you set your Master Password on https://share.huyab.click first."
+echo "Setup complete! Make sure you set your Master Password on https://share.huyab.cfd first."

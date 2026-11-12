@@ -12,12 +12,12 @@
     "not_found_handling": "single-page-application"
   },
   "vars": {
-    "SSO_ISSUER": "https://auth.huyab.click",
-    "APP_URL": "https://share.huyab.click"
+    "SSO_ISSUER": "https://auth.huyab.cfd",
+    "APP_URL": "https://share.huyab.cfd"
   },
   "workers_dev": false,
   "routes": [
-    { "pattern": "share.huyab.click/*", "zone_name": "huyab.click" }
+    { "pattern": "share.huyab.cfd/*", "zone_name": "huyab.cfd" }
   ],
   "d1_databases": [
     {

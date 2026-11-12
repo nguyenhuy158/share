@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-Instant artifact hosting for AI agents (`share.huyab.click`): React 19 + Vite +
+Instant artifact hosting for AI agents (`share.huyab.cfd`): React 19 + Vite +
 Tailwind v4 dashboard plus a Hono Cloudflare Worker (D1 + storage) that serves
 uploaded HTML/SVG artifacts. Login via shared SSO; CLI/agents use a master
 password.
@@ -36,7 +36,7 @@ wrangler.jsonc           # Worker bindings
 - `pnpm deploy`: build then `wrangler deploy`.
 - `pnpm e2e`: build, fresh local D1 (`.wrangler/e2e-state`), mock SSO issuer,
   `wrangler dev --local`, then `e2e/readonly-smoke.mjs` + `e2e/ui-smoke.mjs`.
-- `pnpm e2e:prod`: read-only smoke (GET only, logged out) against `share.huyab.click`.
+- `pnpm e2e:prod`: read-only smoke (GET only, logged out) against `share.huyab.cfd`.
 
 ## Coding Style & Naming Conventions
 
@@ -66,17 +66,17 @@ must be green before merging.
 
 ## Ecosystem
 
-See the [huyab.click ecosystem map](https://github.com/nguyenhuy158/kit/blob/main/docs/ECOSYSTEM.md) for how all personal repos connect.
+See the [huyab.cfd ecosystem map](https://github.com/nguyenhuy158/kit/blob/main/docs/ECOSYSTEM.md) for how all personal repos connect.
 
 - Kit packages: `@huyab/sso` (`verifySsoToken` on the `huyab_sso` cookie only;
   `Authorization: Bearer` is the master password), `@huyab/e2e` (`startServer`,
   `run`, `freePort`, `startSsoMock`, `findChromium`, `BASE`, `assertLocalOnly`
   in `e2e/`), `@huyab/config` (Biome + tsconfig base), reusable CI
   `nguyenhuy158/kit/.github/workflows/check.yml@v0.1.0`.
-- Talks to: sso (JWKS at `auth.huyab.click`, login/logout redirects), shared D1
+- Talks to: sso (JWKS at `auth.huyab.cfd`, login/logout redirects), shared D1
   `db` (`share_` prefix). Called by AI agents through `mcp/index.mjs`,
   `scripts/share.sh` and `skills/share-artifact` (all target
-  `https://share.huyab.click`); mytools pings it for uptime.
+  `https://share.huyab.cfd`); mytools pings it for uptime.
 
 ## Agent-Specific Instructions
 

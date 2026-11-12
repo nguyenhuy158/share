@@ -1,6 +1,6 @@
 // Smoke CHỈ ĐỌC, không cookie đăng nhập: chỉ GET trang/API công khai và kiểm
 // trang render. Không upload/xoá/đặt mật khẩu, không vượt qua xác thực — an
-// toàn để chạy vào production: `pnpm e2e:prod` (share.huyab.click). `pnpm e2e`
+// toàn để chạy vào production: `pnpm e2e:prod` (share.huyab.cfd). `pnpm e2e`
 // chạy nó trước ui-smoke.mjs để dev và prod dùng chung một bộ kiểm tra.
 //
 // Request duy nhất gửi đi (đều là GET):
