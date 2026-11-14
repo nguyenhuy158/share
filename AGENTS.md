@@ -84,6 +84,10 @@ Keep responses short and focused. If a requirement is unclear, ask before making
 assumptions. Use `pnpm` only. Colors come from the `--ui-*` design tokens in
 `src/styles/tokens.css` (structure shared with `../ui-kit`); do not hardcode
 new colors.
+UI primitives come only from [ui-kit](https://github.com/nguyenhuy158/ui-kit)
+(gallery: https://uikit.huyab.cfd). Copy them here and keep them in sync; do
+not hand-roll or fork a primitive in this repo. If ui-kit lacks one, add it to
+ui-kit first (with a Gallery demo), then copy it here.
 Design UI/UX to fit inside a single viewport by default. Avoid page-level
 scrolling; use compact layouts, tabs, panes, or contained internal lists when
 content can overflow.
