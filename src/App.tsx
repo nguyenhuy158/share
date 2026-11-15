@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { Button } from "./ui/Button";
+import { Input } from "./ui/Input";
 import {
   UploadCloud,
   Key,
@@ -59,14 +61,14 @@ const AGENT_TABS: { id: AgentTab; label: string }[] = [
 /** Nút copy nhỏ cạnh khối code: đổi sang "Copied" trong lúc `copied`. */
 function CopyButton({ label, copied, onCopy }: { label: string; copied: boolean; onCopy: () => void }) {
   return (
-    <button
-      type="button"
+    <Button
+      variant="secondary"
+      size="sm"
       onClick={onCopy}
-      className="flex items-center gap-1 text-xs text-fg-muted hover:text-sky-300 transition-colors py-1 px-2 rounded-lg bg-surface-muted"
+      leftIcon={copied ? <Check className="w-3.5 h-3.5 text-success" /> : <Copy className="w-3.5 h-3.5" />}
     >
-      {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
       {copied ? "Copied" : label}
-    </button>
+    </Button>
   );
 }
 
@@ -432,12 +434,11 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                       <label className="block text-xs font-medium text-slate-300 mb-1.5">
                         {user.hasMasterPassword ? "Update Master Password" : "Set New Master Password"}
                       </label>
-                      <input
+                      <Input
                         type="password"
                         placeholder="At least 6 characters"
                         value={masterPassword}
                         onChange={(e) => setMasterPassword(e.target.value)}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-bg border border-slate-700/80 text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500"
                       />
                     </div>
 
@@ -454,13 +455,9 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                       </div>
                     )}
 
-                    <button
-                      type="submit"
-                      disabled={isSavingPassword || !masterPassword}
-                      className="w-full py-2.5 px-4 rounded-xl bg-sky-500 hover:bg-sky-400 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold transition-all shadow-md shadow-sky-500/20"
-                    >
+                    <Button type="submit" block disabled={isSavingPassword || !masterPassword}>
                       {isSavingPassword ? "Saving..." : user.hasMasterPassword ? "Update Password" : "Save Master Password"}
-                    </button>
+                    </Button>
                   </form>
                 </div>
 
@@ -497,13 +494,9 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                         onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
                         className="text-sm text-fg-muted file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-surface-muted file:text-slate-200 hover:file:bg-slate-700 cursor-pointer"
                       />
-                      <button
-                        type="submit"
-                        disabled={isUploading || !uploadFile}
-                        className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-semibold transition-all shadow-md shadow-indigo-600/20 whitespace-nowrap"
-                      >
+                      <Button type="submit" className="whitespace-nowrap" disabled={isUploading || !uploadFile}>
                         {isUploading ? "Uploading..." : "Upload File"}
-                      </button>
+                      </Button>
                     </div>
 
                     {uploadError && (
@@ -537,18 +530,14 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                     </div>
                     <div className="flex items-center p-1 rounded-xl bg-bg border border-border text-xs">
                       {AGENT_TABS.map((tab) => (
-                        <button
+                        <Button
                           key={tab.id}
-                          type="button"
+                          variant={agentTab === tab.id ? "primary" : "ghost"}
+                          size="sm"
                           onClick={() => setAgentTab(tab.id)}
-                          className={`px-3 py-1 rounded-lg font-medium transition-all ${
-                            agentTab === tab.id
-                              ? "bg-sky-500 text-white shadow-sm"
-                              : "text-fg-muted hover:text-slate-200"
-                          }`}
                         >
                           {tab.label}
-                        </button>
+                        </Button>
                       ))}
                     </div>
                   </div>
@@ -590,18 +579,20 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                       </pre>
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-fg-muted">System prompt / Custom instructions:</span>
-                        <button
-                          type="button"
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={() => handleCopy(agentPromptSnippet, "prompt")}
-                          className="text-xs text-sky-400 hover:text-sky-300 transition-colors flex items-center gap-1"
+                          leftIcon={
+                            copiedKey === "prompt" ? (
+                              <Check className="w-3.5 h-3.5 text-success" />
+                            ) : (
+                              <Copy className="w-3.5 h-3.5" />
+                            )
+                          }
                         >
-                          {copiedKey === "prompt" ? (
-                            <Check className="w-3.5 h-3.5 text-emerald-400" />
-                          ) : (
-                            <Copy className="w-3.5 h-3.5" />
-                          )}
                           Copy Prompt
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   )}
@@ -636,13 +627,12 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                 </div>
 
                 <div className="relative w-full sm:w-64">
-                  <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
+                  <Input
                     type="text"
                     placeholder="Search artifacts..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 rounded-xl bg-bg border border-border text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                    leading={<Search className="w-4 h-4" />}
                   />
                 </div>
               </div>
@@ -721,17 +711,15 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                             </td>
                             <td className="py-3.5 px-2 text-right">
                               <div className="flex items-center justify-end gap-1.5">
-                                <button
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
                                   onClick={() => handleCopy(publicUrl, art.id)}
-                                  className="p-1.5 rounded-lg text-fg-muted hover:text-sky-300 hover:bg-surface-muted transition-colors"
                                   title="Copy Preview Link"
+                                  aria-label="Copy Preview Link"
                                 >
-                                  {isCopied ? (
-                                    <Check className="w-4 h-4 text-emerald-400" />
-                                  ) : (
-                                    <Copy className="w-4 h-4" />
-                                  )}
-                                </button>
+                                  {isCopied ? <Check className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
+                                </Button>
                                 <a
                                   href={publicUrl}
                                   target="_blank"
@@ -748,13 +736,15 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                                 >
                                   <Download className="w-4 h-4" />
                                 </a>
-                                <button
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
                                   onClick={() => handleDeleteArtifact(art.id)}
-                                  className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-surface-muted transition-colors"
                                   title="Delete Artifact"
+                                  aria-label="Delete Artifact"
                                 >
                                   <Trash2 className="w-4 h-4" />
-                                </button>
+                                </Button>
                               </div>
                             </td>
                           </tr>
@@ -778,13 +768,9 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                   {selectedArtifactForVersions.title}
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => setSelectedArtifactForVersions(null)}
-                className="p-1 rounded-lg text-fg-muted hover:text-white hover:bg-surface-muted text-xs font-semibold px-2 py-1"
-              >
+              <Button variant="ghost" size="sm" onClick={() => setSelectedArtifactForVersions(null)}>
                 Close
-              </button>
+              </Button>
             </div>
 
             {loadingVersions ? (
@@ -818,18 +804,19 @@ Then reply with the generated public link: ${appOrigin}/artifact/<uuid>`;
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <button
-                          type="button"
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => handleCopy(versionUrl, `ver-${item.version}`)}
-                          className="p-1.5 rounded-lg text-fg-muted hover:text-sky-300 hover:bg-surface-muted transition-colors"
                           title="Copy version link"
+                          aria-label="Copy version link"
                         >
                           {copiedKey === `ver-${item.version}` ? (
-                            <Check className="w-3.5 h-3.5 text-emerald-400" />
+                            <Check className="w-3.5 h-3.5 text-success" />
                           ) : (
                             <Copy className="w-3.5 h-3.5" />
                           )}
-                        </button>
+                        </Button>
                         <a
                           href={versionUrl}
                           target="_blank"
