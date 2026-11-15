@@ -4,7 +4,7 @@
 // chạy nó trước ui-smoke.mjs để dev và prod dùng chung một bộ kiểm tra.
 //
 // Request duy nhất gửi đi (đều là GET):
-//   /api/me (mong anonymous), /api/artifacts (mong 401),
+//   /api/version (commit khác rỗng), /api/health (ok), /api/me (mong anonymous), /api/artifacts (mong 401),
 //   /artifact/<uuid ngẫu nhiên> và .../raw (mong 404 — CỐ TÌNH không mở artifact
 //   có thật vì mỗi lần xem tăng bộ đếm views), /login (không theo redirect),
 //   trang `/` trong Chromium (kèm asset + GET /api/me của SPA).
@@ -32,7 +32,9 @@ async function get(path, status, type) {
   const response = await fetch(BASE + path, { redirect: "manual" });
   const contentType = response.headers.get("content-type") ?? "";
   if (response.status !== status || !contentType.includes(type)) {
-    throw new Error(`GET ${path}: ${response.status} ${contentType} (cần ${status} ${type})`);
+    throw new Error(
+      `GET ${path}: ${response.status} ${contentType} (cần ${status} ${type})`,
+    );
   }
   return response;
 }
@@ -42,18 +44,39 @@ console.log(`Read-only smoke tại ${BASE}\n`);
 const browser = await chromium.launch({ executablePath: findChromium() });
 const page = await browser.newPage();
 const pageErrors = [];
-page.on("pageerror", (error) => pageErrors.push(`${page.url()}: ${error.message}`));
+page.on("pageerror", (error) =>
+  pageErrors.push(`${page.url()}: ${error.message}`),
+);
 
 try {
+  const version = await (
+    await get("/api/version", 200, "application/json")
+  ).json();
+  if (typeof version.commit !== "string" || version.commit.length === 0) {
+    throw new Error(`/api/version thiếu commit: ${JSON.stringify(version)}`);
+  }
+  ok(`GET /api/version reports commit ${version.shortCommit}`);
+
+  const health = await (
+    await get("/api/health", 200, "application/json")
+  ).json();
+  if (health.ok !== true)
+    throw new Error(`/api/health không ok: ${JSON.stringify(health)}`);
+  ok("GET /api/health is ok");
+
   const me = await (await get("/api/me", 200, "application/json")).json();
-  if (me.authenticated !== false) throw new Error(`/api/me phải anonymous: ${JSON.stringify(me)}`);
+  if (me.authenticated !== false)
+    throw new Error(`/api/me phải anonymous: ${JSON.stringify(me)}`);
   ok("GET /api/me is anonymous without SSO cookie");
 
   await get("/api/artifacts", 401, "application/json");
   ok("GET /api/artifacts is 401 without credentials");
 
-  const missing = await (await get(`/artifact/${MISSING_ID}`, 404, "text/html")).text();
-  if (!missing.includes("Artifact Not Found")) throw new Error("trang 404 artifact thiếu tiêu đề");
+  const missing = await (
+    await get(`/artifact/${MISSING_ID}`, 404, "text/html")
+  ).text();
+  if (!missing.includes("Artifact Not Found"))
+    throw new Error("trang 404 artifact thiếu tiêu đề");
   ok("GET /artifact/:id renders the 404 page for an unknown id");
 
   await get(`/artifact/${MISSING_ID}/raw`, 404, "text/plain");
@@ -67,11 +90,16 @@ try {
   ok(`GET /login redirects to SSO (${new URL(location).origin})`);
 
   await page.goto(`${BASE}/`);
-  await page.getByRole("heading", { name: /Instant Preview & Artifact Hosting/ }).waitFor(WAIT);
-  await page.getByRole("link", { name: "Sign in with Google SSO" }).waitFor(WAIT);
+  await page
+    .getByRole("heading", { name: /Instant Preview & Artifact Hosting/ })
+    .waitFor(WAIT);
+  await page
+    .getByRole("link", { name: "Sign in with Google SSO" })
+    .waitFor(WAIT);
   ok("logged-out dashboard renders the landing page");
 
-  if (pageErrors.length > 0) throw new Error(`lỗi JS trên trang: ${pageErrors.join(" | ")}`);
+  if (pageErrors.length > 0)
+    throw new Error(`lỗi JS trên trang: ${pageErrors.join(" | ")}`);
   ok("no uncaught page errors");
 } catch (error) {
   failed += 1;
