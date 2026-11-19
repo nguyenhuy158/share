@@ -13,10 +13,14 @@ src/                     # Dashboard frontend
   index.css              #   Tailwind entry, imports styles/tokens.css
   styles/tokens.css      #   --ui-* design tokens (copied from ../ui-kit)
 worker/src/              # Hono Worker: index.ts (API + artifact serving),
-                         #   session.ts (SSO cookie via @huyab/sso + users), crypto.ts
+                         #   session.ts (SSO cookie via @huyab/sso + users), crypto.ts,
+                         #   deploy-check.ts (GET /api/version + /api/health, public),
+                         #   build-info.ts (BuildInfo type), build-info.generated.ts
+                         #   (generated, gitignored), index.test.ts (Vitest)
 mcp/index.mjs            # MCP server exposing upload tools to agents
 skills/share-artifact/   # Agent skill (SKILL.md)
-scripts/                 # share.sh (CLI upload), install-skill.sh
+scripts/                 # share.sh (CLI upload), install-skill.sh,
+                         #   build-info.mjs (writes worker/src/build-info.generated.ts)
 e2e/                     # playwright-core smoke on @huyab/e2e: run.mjs, readonly-smoke, ui-smoke
 migrations/              # D1 migrations, history in share_migrations
 wrangler.jsonc           # Worker bindings
@@ -36,18 +40,28 @@ See the [huyab.cfd ecosystem map](https://github.com/nguyenhuy158/kit/blob/main/
   `scripts/share.sh` and `skills/share-artifact` (all target
   `https://share.huyab.cfd`); mytools pings it for uptime.
 
+Public deploy-check endpoints (GET only, no auth, registered before any
+auth): `GET /api/version` returns the build baked in by
+`scripts/build-info.mjs` (`commit`, `shortCommit`, `branch`, `builtBy`,
+`dirty`, `builtAt`); `GET /api/health` returns `{ok:true}` or 500
+`{ok:false,hint}` after a `SELECT 1` on D1. Compare `commit` with
+`git rev-parse HEAD` after a deploy. Every `dev`, `dev:api`, `check`,
+`build`, `test`, `e2e` and `deploy` script runs `node scripts/build-info.mjs`
+first; use `pnpm run deploy`.
+
 ## Build, Test, and Development Commands
 
 - `pnpm install`: install dependencies.
 - `pnpm dev`: start the Vite dev server on `127.0.0.1` (proxies `/api` to wrangler).
 - `pnpm dev:api`: run the Worker locally with `wrangler dev`.
 - `pnpm check`: TypeScript project build check (`tsc -b`).
+- `pnpm test`: Vitest unit tests (`worker/src/*.test.ts`).
 - `pnpm lint`: Biome lint + format check (`biome check .`).
 - `pnpm format`: apply Biome formatting.
 - `pnpm build`: typecheck then Vite production build.
 - `pnpm preview`: preview the production build on `127.0.0.1`.
 - `pnpm db:migrate:local` / `pnpm db:migrate:remote`: apply pending `migrations/` to D1.
-- `pnpm deploy`: build then `wrangler deploy`.
+- `pnpm run deploy`: build then `wrangler deploy` (`pnpm deploy` is a pnpm builtin).
 - `pnpm e2e`: build, fresh local D1 (`.wrangler/e2e-state`), mock SSO issuer,
   `wrangler dev --local`, then `e2e/readonly-smoke.mjs` + `e2e/ui-smoke.mjs`.
 - `pnpm e2e:prod`: read-only smoke (GET only, logged out) against `share.huyab.cfd`.
@@ -62,7 +76,7 @@ clear responsibility.
 
 ## Testing Guidelines
 
-No unit test suite yet; `pnpm check`, `pnpm build` and `pnpm e2e` are the gate
+Unit tests are Vitest under `worker/src/` (fake D1); `pnpm check`, `pnpm test`, `pnpm build` and `pnpm e2e` are the gate
 (all run in CI). E2E uses `playwright-core` with a system/CI Chromium
 (`findChromium` from `@huyab/e2e`). `startSsoMock` (`@huyab/e2e`) signs a real
 `huyab_sso` JWT and serves its JWKS, so the worker's SSO verifier runs unmodified. `ui-smoke.mjs`

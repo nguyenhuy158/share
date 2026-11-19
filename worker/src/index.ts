@@ -1,6 +1,7 @@
 import { DEFAULT_SSO_ISSUER, ssoUrl } from "@huyab/sso";
 import { Hono, Context } from "hono";
 import { cors } from "hono/cors";
+import { registerDeployCheck } from "./deploy-check.js";
 import { generateSalt, hashPassword, verifyPassword } from "./crypto.js";
 import { findUserByEmail, getSsoClaims, resolveUser, DbUser } from "./session.js";
 
@@ -17,6 +18,8 @@ type Variables = {
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
 app.use("/api/*", cors());
+
+registerDeployCheck(app);
 
 const DEFAULT_APP_URL = "https://share.huyab.cfd";
 

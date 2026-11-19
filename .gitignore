@@ -11,3 +11,4 @@ coverage
 {{pkgetc}}/
 {{HOMEBREW_PREFIX}}/
 e2e-failure.png
+worker/src/build-info.generated.ts
