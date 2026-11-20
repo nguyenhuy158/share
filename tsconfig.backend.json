@@ -1,9 +1,9 @@
 {
   "extends": "@huyab/config/tsconfig.base.json",
   "compilerOptions": {
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.worker.tsbuildinfo",
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.backend.tsbuildinfo",
     "allowJs": true,
     "types": ["@cloudflare/workers-types"]
   },
-  "include": ["worker"]
+  "include": ["backend"]
 }
