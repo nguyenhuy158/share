@@ -8,11 +8,11 @@ uploaded HTML/SVG artifacts. Login via shared SSO; CLI/agents use a master
 password.
 
 ```text
-src/                     # Dashboard frontend
+frontend/src/                     # Dashboard frontend
   main.tsx  App.tsx      #   Entry + single-file app UI
   index.css              #   Tailwind entry, imports styles/tokens.css
   styles/tokens.css      #   --ui-* design tokens (copied from ../ui-kit)
-worker/src/              # Hono Worker: index.ts (API + artifact serving),
+backend/src/              # Hono Worker: index.ts (API + artifact serving),
                          #   session.ts (SSO cookie via @huyab/sso + users), crypto.ts
 mcp/index.mjs            # MCP server exposing upload tools to agents
 skills/share-artifact/   # Agent skill (SKILL.md)
@@ -82,7 +82,7 @@ must be green before merging.
 
 Keep responses short and focused. If a requirement is unclear, ask before making
 assumptions. Use `pnpm` only. Colors come from the `--ui-*` design tokens in
-`src/styles/tokens.css` (structure shared with `../ui-kit`); do not hardcode
+`frontend/src/styles/tokens.css` (structure shared with `../ui-kit`); do not hardcode
 new colors.
 UI primitives come only from [ui-kit](https://github.com/nguyenhuy158/ui-kit)
 (gallery: https://uikit.huyab.cfd). Copy them here and keep them in sync; do
